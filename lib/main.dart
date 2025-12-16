@@ -42,11 +42,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    VideoPage(),
-    AudioPage(),
-    SearchPage(),
-    HistoryPage(),
+  final List<Widget> _pages = [
+    const VideoPage(),
+    const AudioPage(),
+    const SearchPage(),
+    const HistoryPage(),
   ];
 
   final List<PreferredSizeWidget Function(BuildContext)> _appBars = [
@@ -65,6 +65,15 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       actions: const [Icon(Icons.more_vert, color: Colors.white)],
+      bottom: const TabBar(
+        indicatorColor: Colors.blue,
+        labelColor: Colors.blue,
+        unselectedLabelColor: Colors.grey,
+        tabs: [
+          Tab(text: "Video"),
+          Tab(text: "Playlist"),
+        ],
+      ),
     ),
 
     (context) => AppBar(
@@ -90,23 +99,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final isVideo = _currentIndex == 0;
+
+    Widget scaffold = Scaffold(
       appBar: _appBars[_currentIndex](context),
-
       body: _pages[_currentIndex],
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color.fromARGB(255, 34, 27, 68),
-        selectedItemColor: Color(0xFF3713EC),
+        selectedItemColor: const Color(0xFF3713EC),
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const <BottomNavigationBarItem>[
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.video_call), label: 'Video'),
           BottomNavigationBarItem(icon: Icon(Icons.audiotrack), label: 'Audio'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Telusuri'),
@@ -114,5 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
+
+    if (isVideo) {
+      return DefaultTabController(length: 2, child: scaffold);
+    }
+
+    return scaffold;
   }
 }
