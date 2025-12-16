@@ -4,7 +4,7 @@ import 'audio_page.dart';
 import 'search_page.dart';
 import 'history_page.dart';
 import 'splash_screen.dart';
-
+import 'profile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,17 +49,49 @@ class _MyHomePageState extends State<MyHomePage> {
     HistoryPage(),
   ];
 
+  final List<PreferredSizeWidget Function(BuildContext)> _appBars = [
+    (context) => AppBar(
+      backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+      title: const Text("Video", style: TextStyle(color: Colors.white)),
+      centerTitle: true,
+      leading: IconButton(
+        icon: const Icon(Icons.person_2_outlined),
+        color: Colors.white,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfilePage()),
+          );
+        },
+      ),
+      actions: const [Icon(Icons.more_vert, color: Colors.white)],
+    ),
+
+    (context) => AppBar(
+      backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+      title: const Text("Audio", style: TextStyle(color: Colors.white)),
+      centerTitle: true,
+      leading: const Icon(Icons.audiotrack, color: Colors.white),
+    ),
+
+    (context) => AppBar(
+      backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+      title: const Text("Telusuri", style: TextStyle(color: Colors.white)),
+      centerTitle: true,
+      actions: const [Icon(Icons.search, color: Colors.white)],
+    ),
+
+    (context) => AppBar(
+      backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+      title: const Text("Riwayat", style: TextStyle(color: Colors.white)),
+      centerTitle: true,
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 34, 27, 68),
-        leading: const Icon(Icons.person, color: Colors.white),
-        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
-        centerTitle: true,
-        actions: const [Icon(Icons.more_vert, color: Colors.white)],
-        
-      ),
+      appBar: _appBars[_currentIndex](context),
 
       body: _pages[_currentIndex],
 
@@ -73,24 +105,12 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             _currentIndex = index;
           });
-        },        
+        },
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.video_call),
-            label: 'Video',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.audiotrack),
-            label: 'Audio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Telusuri',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Riwayat',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.video_call), label: 'Video'),
+          BottomNavigationBarItem(icon: Icon(Icons.audiotrack), label: 'Audio'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Telusuri'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
         ],
       ),
     );
