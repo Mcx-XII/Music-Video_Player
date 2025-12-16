@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'video_page.dart';
-import 'audio_page.dart';
-import 'search_page.dart';
-import 'history_page.dart';
+import 'videopage/video_page.dart';
+import 'audiopage/audio_page.dart';
+import 'searchpage/search_page.dart';
+import 'historypage/history_page.dart';
 import 'splash_screen.dart';
-import 'profile.dart';
+import 'profilepage/profile.dart';
 
 void main() {
   runApp(const MyApp());
