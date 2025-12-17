@@ -2,15 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+import '../models/video_item.dart';
 
 class VideoPlayerPage extends StatefulWidget {
-  final String videoUrl;
-  final String title;
+  final List<VideoItem> videos;
+  final int initialIndex;
 
   const VideoPlayerPage({
     super.key,
-    required this.videoUrl,
-    required this.title,
+    required this.videos,
+    required this.initialIndex,
   });
 
   @override
@@ -19,34 +20,35 @@ class VideoPlayerPage extends StatefulWidget {
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
   late VideoPlayerController _controller;
+  late int _currentIndex;
 
   bool _showControls = true;
-  bool _showForward = false;
-  bool _showBackward = false;
-
   Timer? _hideTimer;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
 
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.videoUrl),
-    )..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
-
-    // 🔥 PAKSA LANDSCAPE SAAT MASUK VIDEO
+    // 🔓 ROTASI BEBAS
     SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
 
-    // fullscreen
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.immersiveSticky,
+    _loadVideo(_currentIndex);
+  }
+
+  Future<void> _loadVideo(int index) async {
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videos[index].videoUrl),
     );
+
+    await _controller.initialize();
+    _controller.play();
+
+    setState(() {});
   }
 
   @override
@@ -54,25 +56,16 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     _hideTimer?.cancel();
     _controller.dispose();
 
-    // 🔥 BALIK NORMAL SAAT KELUAR VIDEO
+    // 🔒 BALIK KE PORTRAIT
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
     ]);
-
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.edgeToEdge,
-    );
 
     super.dispose();
   }
 
   void _toggleControls() {
-    setState(() {
-      _showControls = !_showControls;
-    });
-
+    setState(() => _showControls = !_showControls);
     if (_showControls) _startHideTimer();
   }
 
@@ -83,28 +76,31 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     });
   }
 
-  void _seekForward() async {
-    final pos = await _controller.position;
-    if (pos == null) return;
-
-    _controller.seekTo(pos + const Duration(seconds: 5));
-
-    setState(() => _showForward = true);
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() => _showForward = false);
-    });
+  void _next() {
+    if (_currentIndex < widget.videos.length - 1) {
+      _currentIndex++;
+      _controller.dispose();
+      _loadVideo(_currentIndex);
+    }
   }
 
-  void _seekBackward() async {
-    final pos = await _controller.position;
-    if (pos == null) return;
+  void _previous() {
+    if (_currentIndex > 0) {
+      _currentIndex--;
+      _controller.dispose();
+      _loadVideo(_currentIndex);
+    }
+  }
 
+  // 🔁 DOUBLE TAP SEEK
+  void _seekForward() {
+    final pos = _controller.value.position;
+    _controller.seekTo(pos + const Duration(seconds: 5));
+  }
+
+  void _seekBackward() {
+    final pos = _controller.value.position;
     _controller.seekTo(pos - const Duration(seconds: 5));
-
-    setState(() => _showBackward = true);
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() => _showBackward = false);
-    });
   }
 
   String _format(Duration d) {
@@ -124,21 +120,16 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       );
     }
 
-    final duration = _controller.value.duration;
     final position = _controller.value.position;
+    final duration = _controller.value.duration;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: _toggleControls,
-        onDoubleTapDown: (details) {
-          final width = MediaQuery.of(context).size.width;
-          details.localPosition.dx < width / 2
-              ? _seekBackward()
-              : _seekForward();
-        },
         child: Stack(
           children: [
+            // 🎬 VIDEO
             Center(
               child: AspectRatio(
                 aspectRatio: _controller.value.aspectRatio,
@@ -146,42 +137,65 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               ),
             ),
 
-            if (_showBackward)
-              const Positioned(
-                left: 50,
-                top: 0,
-                bottom: 0,
-                child: Icon(Icons.replay_5, size: 90, color: Colors.white),
+            // 👈 DOUBLE TAP BACKWARD
+            Positioned.fill(
+              left: 0,
+              right: MediaQuery.of(context).size.width / 2,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onDoubleTap: _seekBackward,
               ),
+            ),
 
-            if (_showForward)
-              const Positioned(
-                right: 50,
-                top: 0,
-                bottom: 0,
-                child: Icon(Icons.forward_5, size: 90, color: Colors.white),
+            // 👉 DOUBLE TAP FORWARD
+            Positioned.fill(
+              left: MediaQuery.of(context).size.width / 2,
+              right: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onDoubleTap: _seekForward,
               ),
+            ),
 
+            // 🎮 PLAY / NEXT / PREV
             if (_showControls)
               Center(
-                child: IconButton(
-                  iconSize: 70,
-                  color: Colors.white,
-                  icon: Icon(
-                    _controller.value.isPlaying
-                        ? Icons.pause_circle
-                        : Icons.play_circle,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _controller.value.isPlaying
-                          ? _controller.pause()
-                          : _controller.play();
-                    });
-                  },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      iconSize: 48,
+                      icon: const Icon(Icons.skip_previous,
+                          color: Colors.white),
+                      onPressed: _previous,
+                    ),
+                    IconButton(
+                      iconSize: 70,
+                      icon: Icon(
+                        _controller.value.isPlaying
+                            ? Icons.pause_circle
+                            : Icons.play_circle,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _controller.value.isPlaying
+                              ? _controller.pause()
+                              : _controller.play();
+                        });
+                      },
+                    ),
+                    IconButton(
+                      iconSize: 48,
+                      icon:
+                          const Icon(Icons.skip_next, color: Colors.white),
+                      onPressed: _next,
+                    ),
+                  ],
                 ),
               ),
 
+            // ⏱ PROGRESS BAR
             if (_showControls)
               Positioned(
                 bottom: 0,
@@ -194,7 +208,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       allowScrubbing: true,
                       colors: const VideoProgressColors(
                         playedColor: Colors.blue,
-                        bufferedColor: Colors.grey,
                         backgroundColor: Colors.white24,
                       ),
                     ),
@@ -202,12 +215,15 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                         children: [
                           Text(_format(position),
-                              style: const TextStyle(color: Colors.white)),
+                              style:
+                                  const TextStyle(color: Colors.white)),
                           Text(_format(duration),
-                              style: const TextStyle(color: Colors.white)),
+                              style:
+                                  const TextStyle(color: Colors.white)),
                         ],
                       ),
                     ),
