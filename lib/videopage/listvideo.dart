@@ -11,19 +11,29 @@ class VideoList extends StatelessWidget {
     return FutureBuilder<List<VideoModel>>(
       future: PixabayService().fetchVideos(),
       builder: (context, snapshot) {
-        // loading
+        // LOADING
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(color: Colors.white),
           );
         }
 
-        // error
+        // ERROR
         if (snapshot.hasError) {
           return Center(
             child: Text(
-              'Error: ${snapshot.error}',
+              'Terjadi kesalahan: ${snapshot.error}',
               style: const TextStyle(color: Colors.white),
+            ),
+          );
+        }
+
+        // DATA KOSONG
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text(
+              'Video tidak tersedia',
+              style: TextStyle(color: Colors.white),
             ),
           );
         }
@@ -36,13 +46,13 @@ class VideoList extends StatelessWidget {
             final video = videos[index];
 
             return ListTile(
-              // 🔥 INI BAGIAN PENTING (KLIK VIDEO)
+              // ▶️ KLIK VIDEO
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => VideoPlayerPage(
-                      videoUrl: video.videoUrl, // URL video dari API
+                      videoUrl: video.videoUrl,
                       title: video.title,
                     ),
                   ),
@@ -59,6 +69,13 @@ class VideoList extends StatelessWidget {
                       width: 60,
                       height: 40,
                       fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 60,
+                        height: 40,
+                        color: Colors.grey.shade700,
+                        child: const Icon(Icons.broken_image,
+                            color: Colors.white),
+                      ),
                     ),
                     Container(
                       width: 60,
