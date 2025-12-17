@@ -31,20 +31,26 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         _controller.play();
       });
 
-    // 🔒 Default portrait
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
-  }
+// ✅ IZINKAN PORTRAIT + LANDSCAPE
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+}
 
-  @override
-  void dispose() {
-    _controller.dispose();
+@override
+void dispose() {
+  _controller.dispose();
 
-    // 🔓 Balik ke normal saat keluar
-    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-    super.dispose();
-  }
+  // 🔒 BALIK KE PORTRAIT SAAT KELUAR
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
+  super.dispose();
+}
+
 
   @override
   Widget build(BuildContext context) {
