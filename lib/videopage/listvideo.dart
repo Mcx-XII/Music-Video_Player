@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/video_item.dart';
 import '../models/video_model.dart';
 import '../services/pixabay_services.dart';
 import 'video_player_page.dart';
@@ -27,16 +26,14 @@ class VideoList extends StatelessWidget {
           );
         }
 
-        final apiVideos = snapshot.data!;
-
-        // 🔥 KONVERSI API → VideoItem
-        final videos = apiVideos.map((v) {
-          return VideoItem(
-            title: v.title,
-            videoUrl: v.videoUrl,
-            thumbnail: v.thumbnail,
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text('Tidak ada video ditemukan', 
+            style: TextStyle(color: Colors.white)),
           );
-        }).toList();
+        }
+
+        final List<VideoModel> videos = snapshot.data!;
 
         return ListView.builder(
           itemCount: videos.length,
@@ -49,7 +46,7 @@ class VideoList extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => VideoPlayerPage(
-                      videos: videos,
+                      videos: videos, // Langsung mengirim List<VideoModel>
                       initialIndex: index,
                     ),
                   ),
@@ -61,16 +58,18 @@ class VideoList extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     Image.network(
-                      video.thumbnail,
+                      video.thumbnail, // Menggunakan properti dari VideoModel
                       width: 60,
                       height: 40,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => 
+                          const Icon(Icons.broken_image, color: Colors.white),
                     ),
                     Container(
                       width: 60,
                       height: 40,
-                      color: Colors.black.withOpacity(0.3),
-                      child: const Icon(Icons.play_arrow, color: Colors.white),
+                      color: Colors.black.withAlpha(77), // Pengganti withOpacity
+                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
                     ),
                   ],
                 ),

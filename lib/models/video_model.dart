@@ -14,9 +14,9 @@ class VideoModel {
   factory VideoModel.fromJson(Map<String, dynamic> json) {
     return VideoModel(
       title: json['tags'] ?? 'No Title',
-      thumbnail: json['videos']['tiny']['thumbnail'],
-      videoUrl: json['videos']['medium']['url'],
-      views: json['views'],
+      thumbnail: json['videos']['tiny']['thumbnail'] ?? '',
+      videoUrl: json['videos']['medium']['url'] ?? '',
+      views: json['views'] ?? 0,
     );
   }
 }
