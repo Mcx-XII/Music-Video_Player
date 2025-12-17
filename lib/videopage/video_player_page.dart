@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
+import 'package:video_player/video_player.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
@@ -19,7 +19,11 @@ class VideoPlayerPage extends StatefulWidget {
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
   late VideoPlayerController _controller;
+
   bool _showControls = true;
+  bool _showForward = false;
+  bool _showBackward = false;
+
   Timer? _hideTimer;
 
   @override
@@ -31,13 +35,45 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     )..initialize().then((_) {
         setState(() {});
         _controller.play();
-        _startHideTimer();
       });
 
+    // 🔥 PAKSA LANDSCAPE SAAT MASUK VIDEO
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+
+    // fullscreen
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.immersiveSticky,
+    );
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    _controller.dispose();
+
+    // 🔥 BALIK NORMAL SAAT KELUAR VIDEO
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    );
+
+    super.dispose();
+  }
+
+  void _toggleControls() {
+    setState(() {
+      _showControls = !_showControls;
+    });
+
+    if (_showControls) _startHideTimer();
   }
 
   void _startHideTimer() {
@@ -47,37 +83,34 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     });
   }
 
-  void _toggleControls() {
-    setState(() => _showControls = !_showControls);
-    if (_showControls) _startHideTimer();
-  }
+  void _seekForward() async {
+    final pos = await _controller.position;
+    if (pos == null) return;
 
-  void _togglePlayPause() {
-    setState(() {
-      _controller.value.isPlaying
-          ? _controller.pause()
-          : _controller.play();
+    _controller.seekTo(pos + const Duration(seconds: 5));
+
+    setState(() => _showForward = true);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() => _showForward = false);
     });
-    _startHideTimer();
   }
 
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
-    return '$minutes:$seconds';
+  void _seekBackward() async {
+    final pos = await _controller.position;
+    if (pos == null) return;
+
+    _controller.seekTo(pos - const Duration(seconds: 5));
+
+    setState(() => _showBackward = true);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() => _showBackward = false);
+    });
   }
 
-  @override
-  void dispose() {
-    _hideTimer?.cancel();
-    _controller.dispose();
-
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
-
-    super.dispose();
+  String _format(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   @override
@@ -91,10 +124,19 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       );
     }
 
+    final duration = _controller.value.duration;
+    final position = _controller.value.position;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: _toggleControls,
+        onDoubleTapDown: (details) {
+          final width = MediaQuery.of(context).size.width;
+          details.localPosition.dx < width / 2
+              ? _seekBackward()
+              : _seekForward();
+        },
         child: Stack(
           children: [
             Center(
@@ -104,77 +146,74 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               ),
             ),
 
-            // 🔥 UI CONTROLS
-            AnimatedOpacity(
-              opacity: _showControls ? 1 : 0,
-              duration: const Duration(milliseconds: 300),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(height: 20),
+            if (_showBackward)
+              const Positioned(
+                left: 50,
+                top: 0,
+                bottom: 0,
+                child: Icon(Icons.replay_5, size: 90, color: Colors.white),
+              ),
 
-                  // ▶ PLAY / PAUSE
-                  Center(
-                    child: GestureDetector(
-                      onTap: _togglePlayPause,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(20),
-                        child: Icon(
-                          _controller.value.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                          size: 60,
-                          color: Colors.white,
-                        ),
+            if (_showForward)
+              const Positioned(
+                right: 50,
+                top: 0,
+                bottom: 0,
+                child: Icon(Icons.forward_5, size: 90, color: Colors.white),
+              ),
+
+            if (_showControls)
+              Center(
+                child: IconButton(
+                  iconSize: 70,
+                  color: Colors.white,
+                  icon: Icon(
+                    _controller.value.isPlaying
+                        ? Icons.pause_circle
+                        : Icons.play_circle,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _controller.value.isPlaying
+                          ? _controller.pause()
+                          : _controller.play();
+                    });
+                  },
+                ),
+              ),
+
+            if (_showControls)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    VideoProgressIndicator(
+                      _controller,
+                      allowScrubbing: true,
+                      colors: const VideoProgressColors(
+                        playedColor: Colors.blue,
+                        bufferedColor: Colors.grey,
+                        backgroundColor: Colors.white24,
                       ),
                     ),
-                  ),
-
-                  // ⏱ PROGRESS BAR
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        VideoProgressIndicator(
-                          _controller,
-                          allowScrubbing: true,
-                          colors: const VideoProgressColors(
-                            playedColor: Colors.red,
-                            bufferedColor: Colors.white54,
-                            backgroundColor: Colors.white24,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-
-                        ValueListenableBuilder(
-                          valueListenable: _controller,
-                          builder: (context, VideoPlayerValue value, _) {
-                            return Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _formatDuration(value.position),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                Text(
-                                  _formatDuration(value.duration),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(_format(position),
+                              style: const TextStyle(color: Colors.white)),
+                          Text(_format(duration),
+                              style: const TextStyle(color: Colors.white)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
