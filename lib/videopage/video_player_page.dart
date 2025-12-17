@@ -34,7 +34,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         _startHideTimer();
       });
 
-    // landscape otomatis
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -62,12 +61,18 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     _startHideTimer();
   }
 
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(d.inMinutes.remainder(60));
+    final seconds = twoDigits(d.inSeconds.remainder(60));
+    return '$minutes:$seconds';
+  }
+
   @override
   void dispose() {
     _hideTimer?.cancel();
     _controller.dispose();
 
-    // balik ke portrait
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
@@ -91,33 +96,83 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       body: GestureDetector(
         onTap: _toggleControls,
         child: Stack(
-          alignment: Alignment.center,
           children: [
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
+            Center(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
             ),
 
-            // 🔥 PLAY / PAUSE BUTTON
+            // 🔥 UI CONTROLS
             AnimatedOpacity(
               opacity: _showControls ? 1 : 0,
               duration: const Duration(milliseconds: 300),
-              child: GestureDetector(
-                onTap: _togglePlayPause,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    shape: BoxShape.circle,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(height: 20),
+
+                  // ▶ PLAY / PAUSE
+                  Center(
+                    child: GestureDetector(
+                      onTap: _togglePlayPause,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        child: Icon(
+                          _controller.value.isPlaying
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                          size: 60,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  padding: const EdgeInsets.all(20),
-                  child: Icon(
-                    _controller.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                    size: 60,
-                    color: Colors.white,
+
+                  // ⏱ PROGRESS BAR
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      children: [
+                        VideoProgressIndicator(
+                          _controller,
+                          allowScrubbing: true,
+                          colors: const VideoProgressColors(
+                            playedColor: Colors.red,
+                            bufferedColor: Colors.white54,
+                            backgroundColor: Colors.white24,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+
+                        ValueListenableBuilder(
+                          valueListenable: _controller,
+                          builder: (context, VideoPlayerValue value, _) {
+                            return Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _formatDuration(value.position),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                Text(
+                                  _formatDuration(value.duration),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
