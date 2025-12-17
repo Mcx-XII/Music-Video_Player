@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/video_model.dart';
 import '../services/pixabay_services.dart';
+import 'video_player_page.dart';
 
 class VideoList extends StatelessWidget {
   const VideoList({super.key});
@@ -35,6 +36,19 @@ class VideoList extends StatelessWidget {
             final video = videos[index];
 
             return ListTile(
+              // 🔥 INI BAGIAN PENTING (KLIK VIDEO)
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => VideoPlayerPage(
+                      videoUrl: video.videoUrl, // URL video dari API
+                      title: video.title,
+                    ),
+                  ),
+                );
+              },
+
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Stack(
@@ -58,16 +72,19 @@ class VideoList extends StatelessWidget {
                   ],
                 ),
               ),
+
               title: Text(
                 video.title,
                 style: const TextStyle(color: Colors.white),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+
               subtitle: Text(
                 '${video.views} views',
                 style: const TextStyle(color: Colors.grey),
               ),
+
               trailing: const Icon(
                 Icons.more_vert,
                 color: Colors.white,
