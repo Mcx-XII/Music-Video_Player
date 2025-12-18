@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/pixabay_services.dart';
-//import '../models/video_model.dart';
 import '../models/audio_model.dart';
 import '../videopage/online_video_player_page.dart';
 import '../audiopage/online_audio_player_page.dart';
@@ -44,19 +43,16 @@ class _SearchPageState extends State<SearchPage> {
     setState(() => _isLoading = true);
 
     try {
-      // --- Ambil Video ---
       final videos = await _apiService.fetchVideos(
         query: _searchController.text,
       );
 
-      // --- Ambil Audio ---
       final audios = await _apiService.fetchMusic(
         query: _searchController.text,
       );
 
       final results = <SearchResult>[];
 
-      // Masukkan video
       results.addAll(
         videos.map(
           (v) => SearchResult(
@@ -68,7 +64,6 @@ class _SearchPageState extends State<SearchPage> {
         ),
       );
 
-      // Masukkan audio
       results.addAll(
         audios.map(
           (a) => SearchResult(
@@ -87,119 +82,132 @@ class _SearchPageState extends State<SearchPage> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memuat: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1D1B3E),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1D1B3E),
-        elevation: 0,
-        title: TextField(
-          controller: _searchController,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: 'Cari video atau audio di sini...',
-            hintStyle: TextStyle(color: Colors.white54),
-            border: InputBorder.none,
+    return Container(
+      color: const Color.fromARGB(255, 54, 45, 94),
+      child: Column(
+        children: [
+          // SEARCH BAR (karena AppBar di main.dart)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Cari video atau audio...',
+                hintStyle: const TextStyle(color: Colors.white54),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                filled: true,
+                fillColor: const Color.fromARGB(255, 89, 85, 155),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onSubmitted: (_) => _onSearch(),
+            ),
           ),
-          onSubmitted: (_) => _onSearch(),
-        ),
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: _onSearch),
+
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _searchResults.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Ketik sesuatu untuk mencari video/audio',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _searchResults.length,
+                        itemBuilder: (context, index) {
+                          final item = _searchResults[index];
+
+                          return ListTile(
+                            leading: Stack(
+                              children: [
+                                Image.network(
+                                  item.thumbnail,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
+                                Positioned(
+                                  bottom: 4,
+                                  right: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      item.type == SearchResultType.video
+                                          ? Icons.videocam
+                                          : Icons.audiotrack,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            title: Text(
+                              item.title,
+                              style: const TextStyle(color: Colors.white),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: item.type == SearchResultType.audio &&
+                                    item.artist != null
+                                ? Text(
+                                    item.artist!,
+                                    style:
+                                        const TextStyle(color: Colors.grey),
+                                  )
+                                : null,
+                            onTap: () {
+                              if (item.type == SearchResultType.video) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => OnlineVideoPlayerPage(
+                                      videoUrl: item.url,
+                                      videoTitle: item.title,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                final audio = AudioModel(
+                                  title: item.title,
+                                  artist: item.artist ?? 'Unknown',
+                                  audioUrl: item.url,
+                                  duration: 0,
+                                  coverUrl: item.thumbnail,
+                                );
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        OnlineAudioPlayerPage(audio: audio),
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        },
+                      ),
+          ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _searchResults.isEmpty
-          ? const Center(
-              child: Text(
-                'Ketik sesuatu untuk mencari video/audio',
-                style: TextStyle(color: Colors.white54),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _searchResults.length,
-              itemBuilder: (context, index) {
-                final item = _searchResults[index];
-
-                return ListTile(
-                  leading: Stack(
-                    children: [
-                      Image.network(
-                        item.thumbnail,
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                      ),
-                      Positioned(
-                        bottom: 4,
-                        right: 4,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.all(2),
-                          child: Icon(
-                            item.type == SearchResultType.video
-                                ? Icons.videocam
-                                : Icons.audiotrack,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  title: Text(
-                    item.title,
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle:
-                      item.type == SearchResultType.audio && item.artist != null
-                      ? Text(
-                          item.artist!,
-                          style: const TextStyle(color: Colors.grey),
-                        )
-                      : null,
-                  onTap: () {
-                    if (item.type == SearchResultType.video) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OnlineVideoPlayerPage(
-                            videoUrl: item.url,
-                            videoTitle: item.title, // kirim judul video
-                          ),
-                        ),
-                      );
-                    } else if (item.type == SearchResultType.audio) {
-                      final audio = AudioModel(
-                        title: item.title,
-                        artist: item.artist ?? 'Unknown',
-                        audioUrl: item.url,
-                        duration: 0,
-                        coverUrl: item.thumbnail,
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OnlineAudioPlayerPage(audio: audio),
-                        ),
-                      );
-                    }
-                  },
-                );
-              },
-            ),
     );
   }
 }

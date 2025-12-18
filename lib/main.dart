@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'videopage/video_page.dart';
-import 'searchpage/search_page.dart';
+//import 'searchpage/search_page.dart';
 import 'historypage/history_page.dart';
 import 'splash_screen.dart';
 import 'profilepage/profile.dart';
 import 'audiopage/audio_page.dart';
+import 'searchpage/search_online_page.dart';
+import 'searchpage/search_local_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     const VideoPage(),
     const AudioPage(),
-    const SearchPage(),
+    const TabBarView(children: [SearchOnlinePage(), SearchLocalPage()]),
     const HistoryPage(),
   ];
 
@@ -97,6 +99,15 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: const Color.fromARGB(255, 34, 27, 68),
       title: const Text("Telusuri", style: TextStyle(color: Colors.white)),
       centerTitle: true,
+      bottom: const TabBar(
+        indicatorColor: Colors.blue,
+        labelColor: Colors.blue,
+        unselectedLabelColor: Colors.grey,
+        tabs: [
+          Tab(text: "Online"),
+          Tab(text: "Lokal"),
+        ],
+      ),
     ),
 
     (context) => AppBar(
@@ -108,7 +119,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final needsTab = _currentIndex == 0 || _currentIndex == 1;
+    final needsTab =
+        _currentIndex == 0 || _currentIndex == 1 || _currentIndex == 2;
+
+    int tabLength() {
+      if (_currentIndex == 0 || _currentIndex == 1) return 3;
+      if (_currentIndex == 2) return 2;
+      return 0;
+    }
 
     Widget scaffold = Scaffold(
       appBar: _appBars[_currentIndex](context),
@@ -133,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     if (needsTab) {
-      return DefaultTabController(length: 3, child: scaffold);
+      return DefaultTabController(length: tabLength(), child: scaffold);
     }
 
     return scaffold;
