@@ -141,6 +141,12 @@ flutter run
 
 Proyek ini dikembangkan untuk keperluan pembelajaran dan non-komersial. Bebas digunakan dan dimodifikasi sesuai kebutuhan.
 
+## 👥 Contributors
+
+<a href="https://github.com/Mcx-XII/Music-Video_Player/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo="Mcx-XII/Music-Video_Player" />
+</a>
+
 ---
 <br>
   <img alt="snake eating my contributions" src="https://raw.githubusercontent.com/salesp07/salesp07/output/github-contribution-grid-snake.svg" />
