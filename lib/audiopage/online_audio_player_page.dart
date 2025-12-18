@@ -1,0 +1,56 @@
+import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
+import '../../models/audio_model.dart';
+
+class OnlineAudioPlayerPage extends StatefulWidget {
+  final AudioModel audio;
+
+  const OnlineAudioPlayerPage({super.key, required this.audio});
+
+  @override
+  State<OnlineAudioPlayerPage> createState() => _OnlineAudioPlayerPageState();
+}
+
+class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
+  final AudioPlayer player = AudioPlayer();
+  bool isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    player.setUrl(widget.audio.audioUrl);
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+        title: Text(widget.audio.title,
+            style: const TextStyle(color: Colors.white)),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.network(widget.audio.coverUrl, width: 220),
+          const SizedBox(height: 24),
+          IconButton(
+            iconSize: 64,
+            color: Colors.white,
+            icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+            onPressed: () async {
+              isPlaying ? await player.pause() : await player.play();
+              setState(() => isPlaying = !isPlaying);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
