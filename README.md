@@ -78,7 +78,7 @@ Aplikasi ini dirancang untuk memungkinkan pengguna memutar konten multimedia bai
    flutter --version
 2. Clone repository
 ```bash
-git clone https://github.com/Mcx-XII/Music-Video_Player.git
+git clone https://github.com/Mcx-XII/Music-Video_Player.git --version
 3. Masuk ke folder project
 ```bash
 cd Music-Video_Player
