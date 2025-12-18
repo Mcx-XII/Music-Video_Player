@@ -97,7 +97,6 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: const Color.fromARGB(255, 34, 27, 68),
       title: const Text("Telusuri", style: TextStyle(color: Colors.white)),
       centerTitle: true,
-      actions: const [Icon(Icons.search, color: Colors.white)],
     ),
 
     (context) => AppBar(
