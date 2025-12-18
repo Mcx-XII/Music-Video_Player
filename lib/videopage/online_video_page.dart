@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/pixabay_services.dart';
 import '../../models/video_model.dart';
 import 'online_video_player_page.dart';
+import '../../helpers/internet_checker.dart';
 
 class OnlineVideoPage extends StatefulWidget {
   const OnlineVideoPage({super.key});
@@ -38,7 +39,16 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
   Future<void> _fetchVideos({bool refresh = false}) async {
     if (_isLoading) return;
 
+    final connected = await hasInternet();
+    if (!connected) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Tidak ada internet')));
+      return;
+    }
+
     setState(() => _isLoading = true);
+
     if (refresh) {
       _page = 1;
       _videos.clear();
@@ -49,15 +59,15 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
       final newVideos = await _apiService.fetchVideos(page: _page);
       setState(() {
         _videos.addAll(newVideos);
-        _isLoading = false;
         _hasMore = newVideos.isNotEmpty;
         _page++;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memuat: $e')));
+      ).showSnackBar(const SnackBar(content: Text('Gagal memuat video')));
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 

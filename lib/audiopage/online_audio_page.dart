@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/pixabay_services.dart';
 import '../../models/audio_model.dart';
 import 'online_audio_player_page.dart';
+import '../../helpers/internet_checker.dart';
 
 class OnlineAudioPage extends StatefulWidget {
   const OnlineAudioPage({super.key});
@@ -38,6 +39,14 @@ class _OnlineAudioPageState extends State<OnlineAudioPage> {
   Future<void> _fetchAudios({bool refresh = false}) async {
     if (_isLoading) return;
 
+    final connected = await hasInternet();
+    if (!connected) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Tidak ada internet')));
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     if (refresh) {
@@ -47,19 +56,21 @@ class _OnlineAudioPageState extends State<OnlineAudioPage> {
     }
 
     try {
-      final newAudios =
-          await _apiService.fetchMusic(offset: _offset, limit: _limit);
+      final newAudios = await _apiService.fetchMusic(
+        offset: _offset,
+        limit: _limit,
+      );
       setState(() {
         _audios.addAll(newAudios);
-        _isLoading = false;
-        _hasMore = newAudios.length == _limit; // kalau < limit, berarti habis
+        _hasMore = newAudios.length == _limit;
         _offset += newAudios.length;
       });
     } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal memuat audio')));
+    } finally {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat: $e')),
-      );
     }
   }
 
@@ -89,8 +100,14 @@ class _OnlineAudioPageState extends State<OnlineAudioPage> {
           final audio = _audios[index];
           return ListTile(
             leading: Image.network(audio.coverUrl, width: 48),
-            title: Text(audio.title, style: const TextStyle(color: Colors.white)),
-            subtitle: Text(audio.artist, style: const TextStyle(color: Colors.grey)),
+            title: Text(
+              audio.title,
+              style: const TextStyle(color: Colors.white),
+            ),
+            subtitle: Text(
+              audio.artist,
+              style: const TextStyle(color: Colors.grey),
+            ),
             onTap: () {
               Navigator.push(
                 context,

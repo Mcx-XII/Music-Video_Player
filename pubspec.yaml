@@ -28,6 +28,8 @@ dependencies:
   # API (Pixabay & Jamendo)
   http: ^1.2.0
 
+  connectivity_plus: ^6.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
