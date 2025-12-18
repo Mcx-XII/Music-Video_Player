@@ -5,13 +5,13 @@
 
 ---
 
-## Tim (Nama – NIM)
-- Dhea Trilova – (isi NIM kamu)
-- Anggota 2 – (NIM)
-- Anggota 3 – (NIM)
-- Anggota 4 – (NIM)
-- Anggota 5 – (NIM)
-- Anggota 6 – (NIM)
+## TIM 
+1. Dhea Tri Lova Simanjuntak (241712017)
+2. Ruth Anggelia Sihombing (241712012)
+3. Reza Pahlepi (241712010)
+4. Kabul Manik (241712023)
+5. Tiwi Lamberkat (241712001)
+6. Rivaldo Nainggolan (241712043)
 
 ---
 
