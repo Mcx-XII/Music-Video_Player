@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'video_player_page.dart';
 
 class VideoList extends StatelessWidget {
   const VideoList({super.key});
@@ -6,7 +7,7 @@ class VideoList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: 5,
+      itemCount: 1,
       itemBuilder: (context, index) {
         return ListTile(
           leading: ClipRRect(
@@ -19,14 +20,24 @@ class VideoList extends StatelessWidget {
             ),
           ),
           title: const Text(
-            "My Awesome Vacation",
+            "Sample Offline Video",
             style: TextStyle(color: Colors.white),
           ),
           subtitle: const Text(
-            "128 MB • 04:32",
+            "assets/videos/sample2.mp4",
             style: TextStyle(color: Colors.grey),
           ),
-          trailing: const Icon(Icons.more_vert, color: Colors.white),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const VideoPlayerPage(
+                  videoPath: 'assets/videos/sample2.mp4',
+                  isAsset: true,
+                ),
+              ),
+            );
+          },
         );
       },
     );
