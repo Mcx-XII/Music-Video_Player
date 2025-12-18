@@ -3,124 +3,123 @@ import 'package:video_player/video_player.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../services/history_service.dart';
 import '../models/history_item.dart';
+import 'dart:async';
 
 class VideoPlayerPage extends StatefulWidget {
-  final AssetEntity video;
+  final List<AssetEntity> videoList; // Menerima List
+  final int initialIndex;
 
-  const VideoPlayerPage({super.key, required this.video});
+  const VideoPlayerPage({super.key, required this.videoList, required this.initialIndex});
 
   @override
   State<VideoPlayerPage> createState() => _VideoPlayerPageState();
 }
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
-  VideoPlayerController? controller;
-  String? videoName;
+  VideoPlayerController? _controller;
+  late int currentIndex;
+  bool _showControls = true;
+  Timer? _hideTimer;
+  bool _showSeekNotify = false;
+  String _seekText = "";
 
   @override
   void initState() {
     super.initState();
-    loadVideo();
+    currentIndex = widget.initialIndex;
+    _initVideo();
   }
 
-  Future<void> loadVideo() async {
-    final file = await widget.video.file;
+  void _initVideo() async {
+    if (_controller != null) await _controller!.dispose();
+    
+    final asset = widget.videoList[currentIndex];
+    final file = await asset.file;
     if (file == null) return;
 
-    videoName = file.path.split('/').last;
+    _controller = VideoPlayerController.file(file);
+    try {
+      await _controller!.initialize();
+      // Simpan History
+      HistoryService.addToHistory(HistoryItem(type: HistoryType.video, title: asset.title ?? 'Lokal', url: asset.id, thumbnail: '', assetId: asset.id, playedAt: DateTime.now()));
+      
+      if (mounted) {
+        setState(() {});
+        _controller!.play();
+        _startTimer();
+      }
+    } catch (e) { debugPrint("Error: $e"); }
 
-    controller = VideoPlayerController.file(file)
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {});
-          controller!.play();
+    _controller!.addListener(() { if (mounted) setState(() {}); });
+  }
 
-          // ✅ FIX: Menggunakan 'addToHistory' sesuai nama di HistoryService
-          HistoryService.addToHistory(
-            HistoryItem(
-              type: HistoryType.video,
-              title: widget.video.title ?? videoName ?? 'Video Lokal',
-              url: widget.video.id, // ID unik untuk media lokal
-              thumbnail: '',
-              assetId: widget.video.id,
-              playedAt: DateTime.now(),
-            ),
-          );
-        }
-      });
+  void _startTimer() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _controller!.value.isPlaying) setState(() => _showControls = false);
+    });
+  }
+
+  void _seek(Duration offset, String text) {
+    _controller!.seekTo(_controller!.value.position + offset);
+    setState(() { _seekText = text; _showSeekNotify = true; });
+    Future.delayed(const Duration(milliseconds: 500), () { if (mounted) setState(() => _showSeekNotify = false); });
   }
 
   @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
+  void dispose() { _controller?.dispose(); _hideTimer?.cancel(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
-    // Tampilan Loading jika video belum siap
-    if (controller == null || !controller!.value.isInitialized) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
-      );
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return const Scaffold(backgroundColor: Colors.black, body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 34, 27, 68),
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                widget.video.title ?? videoName ?? "Video Player",
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: GestureDetector(
-          onTap: () {
-            if (controller != null) {
-              setState(() {
-                controller!.value.isPlaying
-                    ? controller!.pause()
-                    : controller!.play();
-              });
-            }
-          },
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Pemutar Video
-              AspectRatio(
-                aspectRatio: controller!.value.aspectRatio,
-                child: VideoPlayer(controller!),
-              ),
-              
-              // Ikon Pause jika video sedang tidak berjalan
-              if (!controller!.value.isPlaying)
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.black45,
-                  child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
-                ),
-            ],
-          ),
-        ),
+      body: Stack(
+        children: [
+          GestureDetector(onTap: () { setState(() => _showControls = !_showControls); if (_showControls) _startTimer(); }, child: Center(child: AspectRatio(aspectRatio: _controller!.value.aspectRatio, child: VideoPlayer(_controller!)))),
+          
+          // Double Tap Seek Layer
+          Positioned.fill(child: Row(children: [
+            Expanded(child: GestureDetector(onDoubleTap: () => _seek(const Duration(seconds: -5), "-5s"), behavior: HitTestBehavior.translucent)),
+            Expanded(child: GestureDetector(onDoubleTap: () => _seek(const Duration(seconds: 5), "+5s"), behavior: HitTestBehavior.translucent)),
+          ])),
+
+          if (_showSeekNotify) Center(child: Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(50)), child: Text(_seekText, style: const TextStyle(color: Colors.white, fontSize: 20)))),
+
+          if (_showControls) ...[
+            // Top Bar
+            Positioned(top: 0, left: 0, right: 0, child: Container(color: Colors.black45, child: SafeArea(child: Row(children: [
+              IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+              Expanded(child: Text(widget.videoList[currentIndex].title ?? "Video Lokal", style: const TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis)),
+            ])))),
+
+            // Middle Controls
+            Center(child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              IconButton(icon: const Icon(Icons.skip_previous, size: 50, color: Colors.white), onPressed: () { if (currentIndex > 0) { currentIndex--; _initVideo(); } }),
+              IconButton(icon: Icon(_controller!.value.isPlaying ? Icons.pause_circle : Icons.play_circle, size: 80, color: Colors.white), onPressed: () {
+                setState(() => _controller!.value.isPlaying ? _controller!.pause() : _controller!.play());
+                _startTimer();
+              }),
+              IconButton(icon: const Icon(Icons.skip_next, size: 50, color: Colors.white), onPressed: () { if (currentIndex < widget.videoList.length - 1) { currentIndex++; _initVideo(); } }),
+            ])),
+
+            // Bottom Progress
+            Positioned(bottom: 0, left: 0, right: 0, child: Container(color: Colors.black45, padding: const EdgeInsets.all(15), child: SafeArea(top: false, child: Column(mainAxisSize: MainAxisSize.min, children: [
+              VideoProgressIndicator(_controller!, allowScrubbing: true, colors: const VideoProgressColors(playedColor: Colors.blueAccent)),
+              const SizedBox(height: 8),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text(_format(_controller!.value.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                Text(_format(_controller!.value.duration), style: const TextStyle(color: Colors.white, fontSize: 12)),
+              ]),
+            ])))),
+          ]
+        ],
       ),
     );
   }
+
+  String _format(Duration d) => "${d.inMinutes.remainder(60).toString().padLeft(2, '0')}:${d.inSeconds.remainder(60).toString().padLeft(2, '0')}";
 }

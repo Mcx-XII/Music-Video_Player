@@ -5,7 +5,6 @@ import '../videopage/online_video_player_page.dart';
 import '../audiopage/online_audio_player_page.dart';
 import '../models/audio_model.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../audiopage/audio_player_page.dart';
 import '../videopage/video_player_page.dart';
 import '../models/video_model.dart'; 
@@ -18,7 +17,6 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  // Fungsi untuk mengambil data terbaru dari memori HP
   Future<List<HistoryItem>> _loadHistory() async {
     return await HistoryService.getHistory();
   }
@@ -27,7 +25,6 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 54, 45, 94),
-      // Tombol hapus semua riwayat di pojok kanan atas
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -37,7 +34,7 @@ class _HistoryPageState extends State<HistoryPage> {
             icon: const Icon(Icons.delete_sweep, color: Colors.white54),
             onPressed: () async {
               await HistoryService.clearHistory();
-              setState(() {}); // Refresh tampilan jadi kosong
+              setState(() {}); 
             },
           )
         ],
@@ -71,7 +68,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 leading: _buildThumbnail(item),
                 title: Text(
                   item.title,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -88,16 +85,19 @@ class _HistoryPageState extends State<HistoryPage> {
                   // --- LOGIKA PUTAR ULANG DARI RIWAYAT ---
                   if (item.type == HistoryType.video) {
                     if (item.assetId != null) {
-                      // Video Lokal
+                      // VIDEO LOKAL (FIXED)
                       AssetEntity.fromId(item.assetId!).then((asset) {
                         if (asset != null && context.mounted) {
                           Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => VideoPlayerPage(video: asset),
+                            builder: (_) => VideoPlayerPage(
+                              videoList: [asset], // Sekarang minta List
+                              initialIndex: 0,    // Sekarang minta Index
+                            ),
                           ));
                         }
                       });
                     } else {
-                      // Video Online
+                      // VIDEO ONLINE (Sudah Benar)
                       final videoItem = VideoModel(
                         title: item.title,
                         videoUrl: item.url,
@@ -105,20 +105,28 @@ class _HistoryPageState extends State<HistoryPage> {
                         views: 0,
                       );
                       Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => OnlineVideoPlayerPage(videoList: [videoItem], initialIndex: 0),
+                        builder: (_) => OnlineVideoPlayerPage(
+                          videoList: [videoItem], 
+                          initialIndex: 0,
+                        ),
                       ));
                     }
                   } else {
-                    // Audio (Lokal & Online)
+                    // AUDIO
                     if (item.assetId != null) {
+                      // AUDIO LOKAL (FIXED)
                       AssetEntity.fromId(item.assetId!).then((asset) {
                         if (asset != null && context.mounted) {
                           Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => AudioPlayerPage(audio: asset),
+                            builder: (_) => AudioPlayerPage(
+                              audioList: [asset], // Sekarang minta List
+                              initialIndex: 0,    // Sekarang minta Index
+                            ),
                           ));
                         }
                       });
                     } else {
+                      // AUDIO ONLINE (Sudah Benar)
                       final audio = AudioModel(
                         title: item.title,
                         artist: 'Unknown Artist',
@@ -127,7 +135,10 @@ class _HistoryPageState extends State<HistoryPage> {
                         coverUrl: item.thumbnail,
                       );
                       Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => OnlineAudioPlayerPage(audioList: [audio], initialIndex: 0),
+                        builder: (_) => OnlineAudioPlayerPage(
+                          audioList: [audio], 
+                          initialIndex: 0,
+                        ),
                       ));
                     }
                   }
@@ -140,7 +151,6 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  // Helper untuk membangun gambar thumbnail riwayat
   Widget _buildThumbnail(HistoryItem item) {
     if (item.thumbnail.isNotEmpty) {
       return ClipRRect(
