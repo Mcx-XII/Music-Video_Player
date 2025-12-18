@@ -220,11 +220,14 @@ class _SearchPageState extends State<SearchPage> {
                                 );
 
                                 Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => OnlineAudioPlayerPage(audio: audio),
-                                  ),
-                                );
+  context,
+  MaterialPageRoute(
+    builder: (_) => OnlineAudioPlayerPage(
+      audioList: [audio], // Kirim lagu sebagai list tunggal
+      initialIndex: 0,
+    ),
+  ),
+);
                               }
                             },
                           );

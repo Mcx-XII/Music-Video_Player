@@ -125,25 +125,29 @@ class _HistoryPageState extends State<HistoryPage> {
                         }
                       });
                     }
-                    // ONLINE AUDIO
-                    else {
-                      final audio = AudioModel(
-                        title: item.title,
-                        artist: 'Unknown',
-                        audioUrl: item.url,
-                        duration: 0,
-                        coverUrl: item.thumbnail,
-                      );
+// ONLINE AUDIO
+else {
+  final audio = AudioModel(
+    title: item.title,
+    artist: 'Unknown',
+    audioUrl: item.url,
+    duration: 0,
+    coverUrl: item.thumbnail,
+  );
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OnlineAudioPlayerPage(audio: audio),
-                        ),
-                      );
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnlineAudioPlayerPage(
+        audioList: [audio], // Bungkus dalam List (playlist isi 1)
+        initialIndex: 0,
+      ),
+    ),
+  );
+}
                     }
                   }
-                },
+                
               );
             },
           );

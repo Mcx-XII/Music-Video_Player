@@ -108,14 +108,18 @@ class _OnlineAudioPageState extends State<OnlineAudioPage> {
               audio.artist,
               style: const TextStyle(color: Colors.grey),
             ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => OnlineAudioPlayerPage(audio: audio),
-                ),
-              );
-            },
+onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => OnlineAudioPlayerPage(
+        // Ganti '_audios' sesuai dengan nama variabel List di bagian atas State kamu
+        audioList: _audios, 
+        initialIndex: index,
+      ),
+    ),
+  );
+},
           );
         },
       ),
