@@ -118,6 +118,7 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
                   builder: (_) => OnlineVideoPlayerPage(
                     videoUrl: video.videoUrl,
                     videoTitle: video.title,
+                    videoThumbnail: video.thumbnail, // ✅ KIRIM
                   ),
                 ),
               );

@@ -189,6 +189,7 @@ class _SearchPageState extends State<SearchPage> {
                                 builder: (_) => OnlineVideoPlayerPage(
                                   videoUrl: item.url,
                                   videoTitle: item.title,
+                                  videoThumbnail: item.thumbnail, // ✅ KIRIM
                                 ),
                               ),
                             );

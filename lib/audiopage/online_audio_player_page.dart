@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../models/audio_model.dart';
+import '../../services/history_service.dart';
+import '../../models/history_item.dart';
 
 class OnlineAudioPlayerPage extends StatefulWidget {
   final AudioModel audio;
@@ -19,6 +21,17 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
   void initState() {
     super.initState();
     player.setUrl(widget.audio.audioUrl);
+
+    // ✅ SIMPAN RIWAYAT AUDIO ONLINE
+    HistoryService.add(
+      HistoryItem(
+        type: HistoryType.audio,
+        title: widget.audio.title,
+        url: widget.audio.audioUrl,
+        thumbnail: widget.audio.coverUrl,
+        playedAt: DateTime.now(),
+      ),
+    );
   }
 
   @override

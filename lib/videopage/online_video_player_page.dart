@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import '../../services/history_service.dart';
+import '../../models/history_item.dart';
 
 class OnlineVideoPlayerPage extends StatefulWidget {
   final String videoUrl;
-  final String videoTitle; // tambahkan ini
+  final String videoTitle; 
+  final String videoThumbnail;
 
   const OnlineVideoPlayerPage({
     super.key,
     required this.videoUrl,
-    required this.videoTitle, // required
+    required this.videoTitle,
+    required this.videoThumbnail,
   });
 
   @override
@@ -19,12 +23,24 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
   late VideoPlayerController controller;
 
   @override
+  @override
   void initState() {
     super.initState();
     controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
       ..initialize().then((_) {
         setState(() {});
         controller.play();
+
+        // ✅ SIMPAN RIWAYAT
+        HistoryService.add(
+          HistoryItem(
+            type: HistoryType.video,
+            title: widget.videoTitle,
+            url: widget.videoUrl,
+            thumbnail: widget.videoThumbnail,
+            playedAt: DateTime.now(),
+          ),
+        );
       });
   }
 

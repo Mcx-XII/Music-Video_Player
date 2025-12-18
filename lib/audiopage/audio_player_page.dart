@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../services/history_service.dart';
+import '../models/history_item.dart';
 
 class AudioPlayerPage extends StatefulWidget {
   final AssetEntity audio;
@@ -25,6 +27,18 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
     final file = await widget.audio.file;
     if (file != null) {
       await _player.setFilePath(file.path);
+
+      // ✅ SIMPAN RIWAYAT AUDIO LOKAL
+      HistoryService.add(
+        HistoryItem(
+          type: HistoryType.audio,
+          title: widget.audio.title ?? 'Audio',
+          url: widget.audio.id,
+          thumbnail: '',
+          assetId: widget.audio.id,
+          playedAt: DateTime.now(),
+        ),
+      );
     }
   }
 

@@ -25,10 +25,12 @@ dependencies:
   just_audio: ^0.9.36
   video_player: ^2.8.6
 
-  # API (Pixabay & Jamendo)
+  # buat ambel API (Pixabay & Jamendo)
   http: ^1.2.0
 
-  connectivity_plus: ^6.0.3
+  connectivity_plus: ^6.0.3 #ngecek wifi
+  shared_preferences: ^2.2.2 #buat nyimpen setelan user
+
 
 dev_dependencies:
   flutter_test:

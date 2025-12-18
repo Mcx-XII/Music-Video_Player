@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../services/history_service.dart';
+import '../models/history_item.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final AssetEntity video;
@@ -32,6 +34,18 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       ..initialize().then((_) {
         setState(() {});
         controller!.play();
+
+        // ✅ SIMPAN RIWAYAT VIDEO LOKAL
+        HistoryService.add(
+          HistoryItem(
+            type: HistoryType.video,
+            title: widget.video.title ?? 'Video',
+            url: widget.video.id,
+            thumbnail: '',
+            assetId: widget.video.id,
+            playedAt: DateTime.now(),
+          ),
+        );
       });
   }
 
