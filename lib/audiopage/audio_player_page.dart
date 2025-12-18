@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+
 
 class AudioPlayerPage extends StatefulWidget {
   final AssetEntity audio;
@@ -47,22 +49,55 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
         ),
       ),
 
-      body: Center(
-        child: IconButton(
-          iconSize: 64,
-          color: Colors.white,
-          icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-          onPressed: () async {
-            if (isPlaying) {
-              await _player.pause();
-            } else {
-              await _player.play();
-            }
-            setState(() {
-              isPlaying = !isPlaying;
-            });
-          },
-        ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FutureBuilder(
+            future: widget.audio.file,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+
+              return FutureBuilder(
+                future: MetadataRetriever.fromFile(snapshot.data!),
+                builder: (context, metaSnap) {
+                  if (!metaSnap.hasData || metaSnap.data!.albumArt == null) {
+                    return const Icon(
+                      Icons.music_note,
+                      size: 180,
+                      color: Colors.white,
+                    );
+                  }
+
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.memory(
+                      metaSnap.data!.albumArt!,
+                      width: 220,
+                      height: 220,
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+
+          const SizedBox(height: 30),
+
+          IconButton(
+            iconSize: 64,
+            color: Colors.white,
+            icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+            onPressed: () async {
+              if (isPlaying) {
+                await _player.pause();
+              } else {
+                await _player.play();
+              }
+              setState(() => isPlaying = !isPlaying);
+            },
+          ),
+        ],
       ),
     );
   }
