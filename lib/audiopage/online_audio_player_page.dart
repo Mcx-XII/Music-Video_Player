@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/audio_model.dart';
+import '../services/playlist_storage_service.dart'; // Import service untuk simpan playlist
 import 'dart:async';
 
 class OnlineAudioPlayerPage extends StatefulWidget {
-  final List<AudioModel> audioList; // Tambahkan List
-  final int initialIndex;          // Tambahkan Index
+  final List<AudioModel> audioList;
+  final int initialIndex;
 
   const OnlineAudioPlayerPage({
     super.key, 
@@ -21,7 +22,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
   AudioPlayer? _player;
   late int currentIndex;
   
-  // Status Kontrol
   bool _isShuffle = false;
   LoopMode _loopMode = LoopMode.off;
 
@@ -49,12 +49,46 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
     }
   }
 
-  void _playNext() {
-    if (_isShuffle) {
-      // Logika acak sederhana jika shuffle aktif
-      // (Bisa dikembangkan lebih lanjut)
-    }
+  // --- FUNGSI BARU: DIALOG TAMBAH KE PLAYLIST ---
+  void _showAddToPlaylistDialog(AudioModel audio) {
+    String folderName = "";
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2B52),
+        title: const Text("Simpan ke Playlist", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: "Nama Playlist (Misal: Jazz)",
+            hintStyle: TextStyle(color: Colors.white54),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.blueAccent)),
+          ),
+          onChanged: (value) => folderName = value,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+            onPressed: () async {
+              if (folderName.trim().isNotEmpty) {
+                await PlaylistStorageService.addAudioToGroup(folderName.trim(), audio);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Berhasil disimpan ke folder $folderName')),
+                  );
+                }
+              }
+            },
+            child: const Text("Simpan"),
+          ),
+        ],
+      ),
+    );
+  }
 
+  void _playNext() {
     if (currentIndex < widget.audioList.length - 1) {
       setState(() {
         currentIndex++;
@@ -166,7 +200,19 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
                 currentAudio.artist,
                 style: const TextStyle(color: Colors.white54, fontSize: 14),
               ),
-              SizedBox(height: screenHeight * 0.05),
+              
+              // --- POSISI TOMBOL TAMBAH PLAYLIST (NEW) ---
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: const Icon(Icons.playlist_add, color: Colors.blueAccent, size: 28),
+                    onPressed: () => _showAddToPlaylistDialog(currentAudio),
+                  ),
+                ),
+              ),
+
               // PROGRESS SLIDER
               StreamBuilder<Duration>(
                 stream: _player!.positionStream,
@@ -209,18 +255,15 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Tombol Shuffle
                   IconButton(
                     icon: Icon(Icons.shuffle, 
                       color: _isShuffle ? Colors.blueAccent : Colors.white24, size: 22),
                     onPressed: () => setState(() => _isShuffle = !_isShuffle),
                   ),
-                  // Tombol Previous
                   IconButton(
                     icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 45),
                     onPressed: _playPrevious,
                   ),
-                  // Tombol Play/Pause
                   StreamBuilder<bool>(
                     stream: _player!.playingStream,
                     builder: (context, snapshot) {
@@ -235,12 +278,10 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
                       );
                     },
                   ),
-                  // Tombol Next
                   IconButton(
                     icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 45),
                     onPressed: _playNext,
                   ),
-                  // Tombol Repeat
                   IconButton(
                     icon: Icon(_loopMode == LoopMode.one ? Icons.repeat_one : Icons.repeat, 
                       color: _loopMode == LoopMode.one ? Colors.blueAccent : Colors.white24, size: 22),
