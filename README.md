@@ -12,12 +12,16 @@ ViAuo adalah aplikasi **pemutar musik dan video berbasis Android** yang dikemban
 
 ---
 ## TIM 
-1. Dhea Tri Lova Simanjuntak (241712017)
-2. Ruth Anggelia Sihombing (241712012)
-3. Reza Pahlepi (241712010)
-4. Kabul Manik (241712023)
-5. Tiwi Lamberkat (241712001)
+1. Tiwi Lamberkat Silaban (241712001)
+2. Reza Pahlepi (241712010)
+3. Ruth Anggelia Sihombing (241712012)
+4. Dhea Trilova Simanjuntak (241712017)
+5. Kabul Manik (241712023)
 6. Rivaldo Nainggolan (241712043)
+
+   <a href="https://github.com/Mcx-XII/Music-Video_Player/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Mcx-XII/Music-Video_Player" />
+</a>
    
 ## Deskripsi Proyek
 
@@ -41,11 +45,37 @@ ViAuo dirancang untuk dijalankan pada perangkat Android fisik dan mendukung vers
 ---
 
 ## Teknologi & Tools
+Proyek ViAuo dikembangkan menggunakan teknologi utama Flutter dengan fokus pada stabilitas framework dan ekosistem pendukungnya.
 
-* **Flutter** – Framework UI multiplatform
-* **Dart** – Bahasa pemrograman utama
-* **permission_handler** – Manajemen izin runtime Android
-* **Android SDK** – Integrasi native Android
+* **Flutter (Stable Channel)**  
+  Digunakan sebagai framework utama untuk membangun antarmuka aplikasi dan logika bisnis. Versi Flutter yang digunakan berada pada **channel Stable** untuk memastikan kestabilan, kompatibilitas plugin, dan minim error selama pengembangan.
+
+* **Dart**  
+  Bahasa pemrograman utama yang digunakan dalam pengembangan aplikasi Flutter.
+
+* **Flutter SDK Tools**  
+  Digunakan untuk build, debug, hot reload, dan manajemen dependensi.
+
+* **permission_handler**  
+  Digunakan untuk menangani permintaan izin akses media secara runtime sesuai standar Flutter modern.
+
+* **Android SDK (Sebagai Platform Target)**  
+  Digunakan hanya sebagai platform deploy, tanpa ketergantungan pada fitur Android versi tertentu.
+
+ ## Status Flutter Version
+
+Aplikasi ViAuo dikembangkan dan diuji menggunakan:
+
+* **Flutter Channel**: Stable
+* **Flutter Version**: Mengikuti versi stable terbaru saat pengembangan
+* **Dart SDK**: Mengikuti versi bawaan Flutter Stable
+
+Penggunaan Flutter Stable bertujuan untuk:
+* Menjamin kompatibilitas plugin
+* Menghindari breaking changes dari versi beta atau dev
+* Memastikan aplikasi dapat dijalankan secara konsisten di berbagai lingkungan pengembangan
+
+
 
 ---
 
@@ -148,11 +178,7 @@ flutter run
 
 Proyek ini dikembangkan untuk keperluan pembelajaran dan non-komersial. Bebas digunakan dan dimodifikasi sesuai kebutuhan.
 
-## 👥 Contributors
 
-<a href="https://github.com/Mcx-XII/Music-Video_Player/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Mcx-XII/Music-Video_Player" />
-</a>
 
 ---
 <br>
