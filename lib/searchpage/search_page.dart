@@ -1,8 +1,28 @@
 import 'package:flutter/material.dart';
 import '../services/pixabay_services.dart';
-import '../models/video_model.dart';
+//import '../models/video_model.dart';
+import '../models/audio_model.dart';
 import '../videopage/online_video_player_page.dart';
+import '../audiopage/online_audio_player_page.dart';
 
+// --- Model Search Result Umum ---
+enum SearchResultType { video, audio }
+
+class SearchResult {
+  final SearchResultType type;
+  final String title;
+  final String url;
+  final String thumbnail; // video: thumbnail, audio: coverUrl
+  final String? artist; // hanya untuk audio
+
+  SearchResult({
+    required this.type,
+    required this.title,
+    required this.url,
+    required this.thumbnail,
+    this.artist,
+  });
+}
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -15,7 +35,7 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final PixabayService _apiService = PixabayService();
 
-  List<VideoModel> _searchResults = [];
+  List<SearchResult> _searchResults = [];
   bool _isLoading = false;
 
   void _onSearch() async {
@@ -24,7 +44,33 @@ class _SearchPageState extends State<SearchPage> {
     setState(() => _isLoading = true);
 
     try {
-      final results = await _apiService.fetchVideos(query: _searchController.text);
+      // --- Ambil Video ---
+      final videos =
+          await _apiService.fetchVideos(query: _searchController.text);
+
+      // --- Ambil Audio ---
+      final audios =
+          await _apiService.fetchMusic(query: _searchController.text);
+
+      final results = <SearchResult>[];
+
+      // Masukkan video
+      results.addAll(videos.map((v) => SearchResult(
+            type: SearchResultType.video,
+            title: v.title,
+            url: v.videoUrl,
+            thumbnail: v.thumbnail,
+          )));
+
+      // Masukkan audio
+      results.addAll(audios.map((a) => SearchResult(
+            type: SearchResultType.audio,
+            title: a.title,
+            url: a.audioUrl,
+            thumbnail: a.coverUrl,
+            artist: a.artist,
+          )));
+
       setState(() {
         _searchResults = results;
         _isLoading = false;
@@ -48,7 +94,7 @@ class _SearchPageState extends State<SearchPage> {
           controller: _searchController,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
-            hintText: 'Cari video di sini...',
+            hintText: 'Cari video atau audio di sini...',
             hintStyle: TextStyle(color: Colors.white54),
             border: InputBorder.none,
           ),
@@ -65,34 +111,44 @@ class _SearchPageState extends State<SearchPage> {
           ? const Center(child: CircularProgressIndicator())
           : _searchResults.isEmpty
               ? const Center(
-                  child: Text('Ketik sesuatu untuk mencari video',
+                  child: Text('Ketik sesuatu untuk mencari video/audio',
                       style: TextStyle(color: Colors.white54)))
               : ListView.builder(
                   itemCount: _searchResults.length,
                   itemBuilder: (context, index) {
-                    final video = _searchResults[index];
+                    final item = _searchResults[index];
+
                     return ListTile(
+                      leading: Image.network(item.thumbnail, width: 80, fit: BoxFit.cover),
+                      title: Text(item.title, style: const TextStyle(color: Colors.white)),
+                      subtitle: item.type == SearchResultType.audio && item.artist != null
+                          ? Text(item.artist!, style: const TextStyle(color: Colors.grey))
+                          : null,
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => OnlineVideoPlayerPage(
-                              videoUrl: video.videoUrl,
+                        if (item.type == SearchResultType.video) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => OnlineVideoPlayerPage(videoUrl: item.url),
                             ),
-                          ),
-                        );
+                          );
+                        } else if (item.type == SearchResultType.audio) {
+                          // Buat AudioModel sementara untuk player
+                          final audio = AudioModel(
+                            title: item.title,
+                            artist: item.artist ?? 'Unknown',
+                            audioUrl: item.url,
+                            duration: 0,
+                            coverUrl: item.thumbnail,
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => OnlineAudioPlayerPage(audio: audio),
+                            ),
+                          );
+                        }
                       },
-                      leading: Image.network(
-                        video.thumbnail,
-                        width: 80,
-                        fit: BoxFit.cover,
-                      ),
-                      title: Text(
-                        video.title,
-                        style: const TextStyle(color: Colors.white),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
                     );
                   },
                 ),
