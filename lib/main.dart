@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'videopage/video_page.dart';
-import 'audiopage/audio_page.dart';
 import 'searchpage/search_page.dart';
 import 'historypage/history_page.dart';
 import 'splash_screen.dart';
 import 'profilepage/profile.dart';
+import 'audiopage/audio_list_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<Widget> _pages = [
     const VideoPage(),
-    const AudioPage(),
+    const AudioListPage(),
     const SearchPage(),
     const HistoryPage(),
   ];

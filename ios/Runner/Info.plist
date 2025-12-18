@@ -2,6 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<!-- Akses galeri / video -->
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Aplikasi membutuhkan akses ke galeri untuk menampilkan video.</string>
+
+		<!-- Untuk iOS 14+ -->
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>Aplikasi membutuhkan akses untuk membaca dan menyimpan media.</string>
+
+		<key>NSMediaLibraryUsageDescription</key>
+		<string>Aplikasi membutuhkan akses audio.</string>
+
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>

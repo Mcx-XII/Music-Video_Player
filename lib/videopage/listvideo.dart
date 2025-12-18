@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:photo_manager/photo_manager.dart';
 import 'video_player_page.dart';
 import 'dart:io';
-
+import 'package:flutter_application_1/utils/media_permission.dart';
 
 class VideoList extends StatefulWidget {
   const VideoList({super.key});
@@ -22,21 +22,17 @@ class _VideoListState extends State<VideoList> {
   }
 
   Future<void> loadVideos() async {
-    final PermissionState ps = await PhotoManager.requestPermissionExtend();
-
-    if (!ps.hasAccess) {
-      PhotoManager.openSetting();
-      return;
-    }
+    final granted = await requestMediaPermission();
+    if (!granted) return;
 
     final albums = await PhotoManager.getAssetPathList(
       type: RequestType.video,
-      onlyAll: true, // PENTING
+      onlyAll: true,
     );
 
     if (albums.isEmpty) return;
 
-    final media = await albums.first.getAssetListPaged(page: 0, size: 100);
+    final media = await albums.first.getAssetListPaged(page: 0, size: 200);
 
     setState(() {
       videos = media;
