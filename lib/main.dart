@@ -5,7 +5,7 @@ import 'searchpage/search_page.dart';
 import 'historypage/history_page.dart';
 import 'splash_screen.dart';
 import 'profilepage/profile.dart';
-uxjnaxuhdjnedvdcuhdckjsokaisojwjcbjisdksks
+
 void main() {
   runApp(const MyApp());
 }
