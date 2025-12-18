@@ -142,5 +142,7 @@ flutter run
 Proyek ini dikembangkan untuk keperluan pembelajaran dan non-komersial. Bebas digunakan dan dimodifikasi sesuai kebutuhan.
 
 ---
-
-⭐ *Dikembangkan menggunakan Flutter sebagai bagian dari eksplorasi pengembangan aplikasi mobile modern.*
+<br>
+  <img alt="snake eating my contributions" src="https://raw.githubusercontent.com/salesp07/salesp07/output/github-contribution-grid-snake.svg" />
+  
+  <br/><br/><br/>
