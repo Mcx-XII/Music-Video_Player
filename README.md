@@ -1,4 +1,4 @@
-# 🎵🎬 ViAuo – Music & Video Player
+# ViAuo – Music & Video Player
 
 ![Flutter](https://img.shields.io/badge/Flutter-Framework-blue)
 ![Dart](https://img.shields.io/badge/Dart-Language-0175C2)
@@ -12,7 +12,7 @@ ViAuo adalah aplikasi **pemutar musik dan video berbasis Android** yang dikemban
 
 ---
 
-## 📌 Deskripsi Proyek
+## Deskripsi Proyek
 
 Seiring meningkatnya kebutuhan akan aplikasi multimedia yang ringan dan responsif, ViAuo hadir sebagai solusi pemutar media lokal dengan antarmuka sederhana namun fungsional. Aplikasi ini mengimplementasikan navigasi multi-halaman, manajemen izin Android modern, serta dukungan terhadap penyimpanan internal perangkat.
 
@@ -20,20 +20,20 @@ ViAuo dirancang untuk dijalankan pada perangkat Android fisik dan mendukung vers
 
 ---
 
-## ✨ Fitur Utama
+## Fitur Utama
 
-* ▶️ Pemutar video lokal (format MP4)
-* 🎵 Pemutar audio lokal (format MP3)
-* 📂 Akses media langsung dari penyimpanan perangkat
-* 🧭 Navigasi menggunakan Bottom Navigation Bar
-* 🔍 Fitur pencarian media
-* 🕘 Riwayat pemutaran media
-* 👤 Halaman profil pengguna
-* 🌙 Antarmuka dengan tema gelap (Dark Mode)
+*  Pemutar video lokal (format MP4)
+*  Pemutar audio lokal (format MP3)
+*  Akses media langsung dari penyimpanan perangkat
+*  Navigasi menggunakan Bottom Navigation Bar
+*  Fitur pencarian media
+*  Riwayat pemutaran media
+*  Halaman profil pengguna
+*  Antarmuka dengan tema gelap (Dark Mode)
 
 ---
 
-## 🛠️ Teknologi & Tools
+## Teknologi & Tools
 
 * **Flutter** – Framework UI multiplatform
 * **Dart** – Bahasa pemrograman utama
@@ -42,7 +42,7 @@ ViAuo dirancang untuk dijalankan pada perangkat Android fisik dan mendukung vers
 
 ---
 
-## 📁 Struktur Direktori
+##  Struktur Direktori
 
 ```
 lib/
@@ -62,7 +62,7 @@ lib/
 
 ---
 
-## 🔐 Izin Akses (Permissions)
+## Izin Akses (Permissions)
 
 Aplikasi ini memerlukan izin untuk membaca file media dari penyimpanan perangkat.
 
@@ -80,7 +80,7 @@ Permintaan izin dilakukan secara **runtime** menggunakan package `permission_han
 
 ---
 
-## 🚀 Cara Menjalankan Aplikasi
+## Cara Menjalankan Aplikasi
 
 ### 1. Persiapan Lingkungan
 
@@ -111,7 +111,7 @@ flutter run
 
 ---
 
-## 📱 Catatan Khusus Perangkat Android
+## Catatan Khusus Perangkat Android
 
 * Disarankan menggunakan **perangkat fisik** (bukan emulator)
 * Untuk perangkat Xiaomi/Redmi:
@@ -123,13 +123,13 @@ flutter run
 
 ---
 
-## 📸 Dokumentasi Tampilan
+## Dokumentasi Tampilan
 
 > Screenshot aplikasi dapat ditambahkan pada bagian ini untuk dokumentasi visual.
 
 ---
 
-## 👨‍💻 Pengembang
+## Pengembang
 
 * Nama Aplikasi: **ViAuo**
 * Platform: **Android (Flutter)**
@@ -137,7 +137,7 @@ flutter run
 
 ---
 
-## 📄 Lisensi
+## Lisensi
 
 Proyek ini dikembangkan untuk keperluan pembelajaran dan non-komersial. Bebas digunakan dan dimodifikasi sesuai kebutuhan.
 
