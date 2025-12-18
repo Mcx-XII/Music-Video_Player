@@ -8,9 +8,14 @@ class PixabayService {
   static const String _jamendoClientId = 'd2b618dd';
 
   // --- FUNGSI AUDIO (JAMENDO) ---
-  Future<List<AudioModel>> fetchMusic({String query = ''}) async {
-    String url = 'https://api.jamendo.com/v3.0/tracks/?client_id=$_jamendoClientId&format=json&limit=20';
-    
+  Future<List<AudioModel>> fetchMusic({
+    String query = '',
+    int offset = 0,
+    int limit = 20,
+  }) async {
+    String url =
+        'https://api.jamendo.com/v3.0/tracks/?client_id=$_jamendoClientId&format=json&limit=$limit&offset=$offset';
+
     if (query.isNotEmpty) {
       url += '&namesearch=${Uri.encodeComponent(query)}';
     }
@@ -20,8 +25,9 @@ class PixabayService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List results = data['results'] ?? [];
-        // Pastikan konversi ke Map<String, dynamic> aman
-        return results.map((e) => AudioModel.fromJson(Map<String, dynamic>.from(e))).toList();
+        return results
+            .map((e) => AudioModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
       } else {
         throw Exception('Gagal mengambil musik: ${response.statusCode}');
       }
@@ -31,9 +37,13 @@ class PixabayService {
   }
 
   // --- FUNGSI VIDEO (PIXABAY) ---
-  Future<List<VideoModel>> fetchVideos({String query = ''}) async {
-    String url = 'https://pixabay.com/api/videos/?key=$_apiKey&per_page=10';
-    
+  Future<List<VideoModel>> fetchVideos({
+    String query = '',
+    int page = 1,
+  }) async {
+    String url =
+        'https://pixabay.com/api/videos/?key=$_apiKey&per_page=10&page=$page';
+
     if (query.isNotEmpty) {
       url += '&q=${Uri.encodeComponent(query)}';
     }
