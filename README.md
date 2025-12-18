@@ -151,7 +151,7 @@ Proyek ini dikembangkan untuk keperluan pembelajaran dan non-komersial. Bebas di
 ## 👥 Contributors
 
 <a href="https://github.com/Mcx-XII/Music-Video_Player/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo="Mcx-XII/Music-Video_Player" />
+  <img src="https://contrib.rocks/image?repo=Mcx-XII/Music-Video_Player" />
 </a>
 
 ---
