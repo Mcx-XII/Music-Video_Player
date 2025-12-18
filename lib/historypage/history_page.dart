@@ -8,6 +8,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../audiopage/audio_player_page.dart';
 import '../videopage/video_player_page.dart';
+import '../models/video_model.dart'; // Import VideoModel agar bisa digunakan di onTap
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -56,26 +57,22 @@ class _HistoryPageState extends State<HistoryPage> {
 
               return ListTile(
                 leading: _buildThumbnail(item),
-
                 title: Text(
                   item.title,
                   style: const TextStyle(color: Colors.white),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 subtitle: Text(
                   _formatTime(item.playedAt),
                   style: const TextStyle(color: Colors.white54),
                 ),
-
                 trailing: Icon(
                   item.type == HistoryType.video
                       ? Icons.videocam
                       : Icons.audiotrack,
                   color: Colors.white,
                 ),
-
                 onTap: () {
                   // ===== VIDEO =====
                   if (item.type == HistoryType.video) {
@@ -92,15 +89,22 @@ class _HistoryPageState extends State<HistoryPage> {
                         }
                       });
                     }
-                    // ONLINE VIDEO
+                    // ONLINE VIDEO (DI-FIX DI SINI)
                     else {
+                      // Buat VideoModel dari data HistoryItem
+                      final videoItem = VideoModel(
+                        title: item.title,
+                        videoUrl: item.url,
+                        thumbnail: item.thumbnail,
+                        views: 0,
+                      );
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => OnlineVideoPlayerPage(
-                            videoUrl: item.url,
-                            videoTitle: item.title,
-                            videoThumbnail: item.thumbnail,
+                            videoList: [videoItem], // Bungkus dalam List
+                            initialIndex: 0,        // Berikan index awal 0
                           ),
                         ),
                       );
@@ -108,7 +112,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   }
                   // ===== AUDIO =====
                   else {
-                    // LOCAL AUDIO ✅ (INI YANG PENTING)
+                    // LOCAL AUDIO ✅
                     if (item.assetId != null) {
                       AssetEntity.fromId(item.assetId!).then((asset) {
                         if (asset != null) {
