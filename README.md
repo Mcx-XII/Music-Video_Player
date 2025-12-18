@@ -12,7 +12,7 @@ ViAuo adalah aplikasi **pemutar musik dan video berbasis Android** yang dikemban
 
 ---
 ## TIM 
-1. Dhea Tri Lova.s (241712017)
+1. Dhea Tri Lova Simanjuntak (241712017)
 2. Ruth Anggelia Sihombing (241712012)
 3. Reza Pahlepi (241712010)
 4. Kabul Manik (241712023)
