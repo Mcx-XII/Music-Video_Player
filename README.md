@@ -4,7 +4,7 @@
 ![Dart](https://img.shields.io/badge/Dart-Language-0175C2)
 ![Platform](https://img.shields.io/badge/Platform-Android-green)
 ![License](https://img.shields.io/badge/License-Educational-lightgrey)
-![Flutter CI](https://github.com/USERNAME/Music-Video_Player/actions/workflows/flutter.yml/badge.svg)
+![Flutter CI](https://github.com/kabulmcx/Music-Video_Player/actions/workflows/flutter.yml/badge.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 
 ViAuo adalah aplikasi **pemutar musik dan video berbasis Android** yang dikembangkan menggunakan **Flutter**. Aplikasi ini memungkinkan pengguna untuk mengakses, menelusuri, dan memutar file **audio (MP3)** serta **video (MP4)** yang tersimpan di perangkat secara langsung. Proyek ini dibuat sebagai bagian dari pengembangan dan pembelajaran aplikasi mobile menggunakan Flutter.
