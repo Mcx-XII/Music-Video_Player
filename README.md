@@ -11,7 +11,7 @@
 ViAuo adalah aplikasi **pemutar musik dan video berbasis Android** yang dikembangkan menggunakan **Flutter**. Aplikasi ini memungkinkan pengguna untuk mengakses, menelusuri, dan memutar file **audio (MP3)** serta **video (MP4)** yang tersimpan di perangkat secara langsung. Proyek ini dibuat sebagai bagian dari pengembangan dan pembelajaran aplikasi mobile menggunakan Flutter.
 
 ---
-## TIM 
+## Contributor
 1. Tiwi Lamberkat Silaban (241712001)
 2. Reza Pahlepi (241712010)
 3. Ruth Anggelia Sihombing (241712012)
@@ -177,12 +177,6 @@ flutter run
 ## Lisensi
 
 Proyek ini dikembangkan untuk keperluan pembelajaran dan non-komersial. Bebas digunakan dan dimodifikasi sesuai kebutuhan.
-
-
-<br>
-<img alt="snake eating my contributions"
-     src="https://raw.githubusercontent.com/salesp07/salesp07/output/github-contribution-grid-snake.svg" />
-<br><br><br>
 
 ---
 <br>
