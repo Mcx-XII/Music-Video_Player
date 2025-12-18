@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'videopage/video_page.dart';
+import 'videopage/video_player_page.dart';
 import 'audiopage/audio_page.dart';
 import 'searchpage/search_page.dart';
 import 'historypage/history_page.dart';
@@ -43,7 +43,11 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const VideoPage(),
+    const VideoPlayerPage(
+  videoPath: 'assets/videos/sample2.mp4',
+  isAsset: true,
+),
+
     const AudioPage(),
     const SearchPage(),
     const HistoryPage(),
