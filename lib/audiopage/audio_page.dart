@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'audio_list_page.dart';
 import 'audio_playlist_page.dart';
+import 'online_audio_page.dart';
 
 class AudioPage extends StatelessWidget {
   const AudioPage({super.key});
@@ -9,8 +10,9 @@ class AudioPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const TabBarView(
       children: [
-        AudioListPage(),
-        AudioPlaylistPage(),
+        OnlineAudioPage(),     // audio online
+        AudioListPage(),       // audio lokal
+        AudioPlaylistPage(),   // playlist
       ],
     );
   }

@@ -70,7 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
         labelColor: Colors.blue,
         unselectedLabelColor: Colors.grey,
         tabs: [
-          Tab(text: "Video"),
+          Tab(text: "Online"),
+          Tab(text: "Lokal"),
           Tab(text: "Playlist"),
         ],
       ),
@@ -85,7 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
         labelColor: Colors.blue,
         unselectedLabelColor: Colors.grey,
         tabs: [
-          Tab(text: "Audio"),
+          Tab(text: "Online"),
+          Tab(text: "Lokal"),
           Tab(text: "Playlist"),
         ],
       ),
@@ -132,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     if (needsTab) {
-      return DefaultTabController(length: 2, child: scaffold);
+      return DefaultTabController(length: 3, child: scaffold);
     }
 
     return scaffold;
