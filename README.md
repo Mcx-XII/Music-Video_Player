@@ -77,18 +77,19 @@ Aplikasi ini dirancang untuk memungkinkan pengguna memutar konten multimedia bai
    ```bash
    flutter --version
 2. Clone repository
-```bash
-git clone https://github.com/Mcx-XII/Music-Video_Player.git --version
+  ```bash
+  git clone https://github.com/Mcx-XII/Music-Video_Player.git
+  ```bash
 3. Masuk ke folder project
-```bash
-cd Music-Video_Player
+  ```bash
+  cd Music-Video_Player
 4. Pindah ke branch streaming & offline mode
-```bash
-git checkout streaming-offline-mode
+  ```bash
+  git checkout streaming-offline-mode
 5. Install dependencies
-```bash
-flutter pub get
+  ```bash
+  flutter pub get
 6. Jalankan aplikasi
-```bash
-flutter run
+  ```bash
+  flutter run
 7. Pastikan perangkat Android atau emulator sudah terhubung
