@@ -3,37 +3,49 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/history_item.dart';
 
 class HistoryService {
-  static const _key = 'history_items';
-  static const _maxItems = 50;
+  // Key unik untuk menyimpan daftar riwayat di SharedPreferences
+  static const String _keyHistory = 'user_history_storage_v1';
 
-  static Future<void> add(HistoryItem item) async {
+  // --- FUNGSI UNTUK MENGAMBIL DAFTAR RIWAYAT ---
+  static Future<List<HistoryItem>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final List<String> rawList = prefs.getStringList(_key) ?? [];
+    final List<String>? historyJson = prefs.getStringList(_keyHistory);
+    
+    if (historyJson == null) return [];
 
-    // hapus duplikat (url sama)
-    rawList.removeWhere((e) =>
-        HistoryItem.fromJson(jsonDecode(e)).url == item.url);
+    // Mengubah String JSON kembali menjadi List Objek HistoryItem
+    return historyJson.map((item) {
+      return HistoryItem.fromJson(json.decode(item));
+    }).toList();
+  }
 
-    rawList.insert(0, jsonEncode(item.toJson()));
+  // --- FUNGSI UNTUK MENAMBAH ITEM KE RIWAYAT ---
+  static Future<void> addToHistory(HistoryItem item) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<HistoryItem> history = await getHistory();
 
-    if (rawList.length > _maxItems) {
-      rawList.removeLast();
+    // 1. Cek jika URL sudah ada di riwayat, hapus yang lama (agar tidak double)
+    history.removeWhere((oldItem) => oldItem.url == item.url);
+    
+    // 2. Masukkan item baru ke posisi paling atas (index 0)
+    history.insert(0, item);
+
+    // 3. Batasi riwayat maksimal 50 item saja agar memori HP tidak penuh
+    if (history.length > 50) {
+      history = history.sublist(0, 50);
     }
 
-    await prefs.setStringList(_key, rawList);
+    // 4. Simpan kembali ke memori dalam bentuk List String
+    final List<String> historyStrings = history.map((e) {
+      return json.encode(e.toJson());
+    }).toList();
+    
+    await prefs.setStringList(_keyHistory, historyStrings);
   }
 
-  static Future<List<HistoryItem>> getAll() async {
+  // --- FUNGSI UNTUK MENGHAPUS SELURUH RIWAYAT ---
+  static Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final rawList = prefs.getStringList(_key) ?? [];
-
-    return rawList
-        .map((e) => HistoryItem.fromJson(jsonDecode(e)))
-        .toList();
-  }
-
-  static Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
+    await prefs.remove(_keyHistory);
   }
 }

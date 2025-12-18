@@ -8,7 +8,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../audiopage/audio_player_page.dart';
 import '../videopage/video_player_page.dart';
-import '../models/video_model.dart'; // Import VideoModel agar bisa digunakan di onTap
+import '../models/video_model.dart'; 
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -18,20 +18,32 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  late Future<List<HistoryItem>> _historyFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _historyFuture = HistoryService.getAll();
+  // Fungsi untuk mengambil data terbaru dari memori HP
+  Future<List<HistoryItem>> _loadHistory() async {
+    return await HistoryService.getHistory();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 54, 45, 94),
+      // Tombol hapus semua riwayat di pojok kanan atas
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text("RIWAYAT", style: TextStyle(color: Colors.white, fontSize: 16)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep, color: Colors.white54),
+            onPressed: () async {
+              await HistoryService.clearHistory();
+              setState(() {}); // Refresh tampilan jadi kosong
+            },
+          )
+        ],
+      ),
       body: FutureBuilder<List<HistoryItem>>(
-        future: _historyFuture,
+        future: _loadHistory(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -42,16 +54,16 @@ class _HistoryPageState extends State<HistoryPage> {
           if (items.isEmpty) {
             return const Center(
               child: Text(
-                'Belum ada riwayat',
+                'Belum ada riwayat pemutaran',
                 style: TextStyle(color: Colors.white54),
               ),
             );
           }
 
           return ListView.separated(
+            padding: const EdgeInsets.only(bottom: 20),
             itemCount: items.length,
-            separatorBuilder: (_, __) =>
-                const Divider(color: Colors.white24, height: 1),
+            separatorBuilder: (_, __) => const Divider(color: Colors.white12, height: 1),
             itemBuilder: (context, index) {
               final item = items[index];
 
@@ -59,95 +71,67 @@ class _HistoryPageState extends State<HistoryPage> {
                 leading: _buildThumbnail(item),
                 title: Text(
                   item.title,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
                   _formatTime(item.playedAt),
-                  style: const TextStyle(color: Colors.white54),
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
                 ),
                 trailing: Icon(
-                  item.type == HistoryType.video
-                      ? Icons.videocam
-                      : Icons.audiotrack,
-                  color: Colors.white,
+                  item.type == HistoryType.video ? Icons.play_circle_outline : Icons.music_note,
+                  color: Colors.white38,
+                  size: 20,
                 ),
                 onTap: () {
-                  // ===== VIDEO =====
+                  // --- LOGIKA PUTAR ULANG DARI RIWAYAT ---
                   if (item.type == HistoryType.video) {
-                    // LOCAL VIDEO
                     if (item.assetId != null) {
+                      // Video Lokal
                       AssetEntity.fromId(item.assetId!).then((asset) {
-                        if (asset != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => VideoPlayerPage(video: asset),
-                            ),
-                          );
+                        if (asset != null && context.mounted) {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => VideoPlayerPage(video: asset),
+                          ));
                         }
                       });
-                    }
-                    // ONLINE VIDEO (DI-FIX DI SINI)
-                    else {
-                      // Buat VideoModel dari data HistoryItem
+                    } else {
+                      // Video Online
                       final videoItem = VideoModel(
                         title: item.title,
                         videoUrl: item.url,
                         thumbnail: item.thumbnail,
                         views: 0,
                       );
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OnlineVideoPlayerPage(
-                            videoList: [videoItem], // Bungkus dalam List
-                            initialIndex: 0,        // Berikan index awal 0
-                          ),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => OnlineVideoPlayerPage(videoList: [videoItem], initialIndex: 0),
+                      ));
                     }
-                  }
-                  // ===== AUDIO =====
-                  else {
-                    // LOCAL AUDIO ✅
+                  } else {
+                    // Audio (Lokal & Online)
                     if (item.assetId != null) {
                       AssetEntity.fromId(item.assetId!).then((asset) {
-                        if (asset != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AudioPlayerPage(audio: asset),
-                            ),
-                          );
+                        if (asset != null && context.mounted) {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => AudioPlayerPage(audio: asset),
+                          ));
                         }
                       });
-                    }
-// ONLINE AUDIO
-else {
-  final audio = AudioModel(
-    title: item.title,
-    artist: 'Unknown',
-    audioUrl: item.url,
-    duration: 0,
-    coverUrl: item.thumbnail,
-  );
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => OnlineAudioPlayerPage(
-        audioList: [audio], // Bungkus dalam List (playlist isi 1)
-        initialIndex: 0,
-      ),
-    ),
-  );
-}
+                    } else {
+                      final audio = AudioModel(
+                        title: item.title,
+                        artist: 'Unknown Artist',
+                        audioUrl: item.url,
+                        duration: 0,
+                        coverUrl: item.thumbnail,
+                      );
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => OnlineAudioPlayerPage(audioList: [audio], initialIndex: 0),
+                      ));
                     }
                   }
-                
+                },
               );
             },
           );
@@ -156,71 +140,40 @@ else {
     );
   }
 
-  /// ================= THUMBNAIL =================
-
+  // Helper untuk membangun gambar thumbnail riwayat
   Widget _buildThumbnail(HistoryItem item) {
-    // ONLINE (video / audio)
     if (item.thumbnail.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
           item.thumbnail,
-          width: 56,
-          height: 56,
-          fit: BoxFit.cover,
+          width: 56, height: 56, fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => _fallbackIcon(item),
         ),
       );
     }
-
-    // LOCAL VIDEO SAJA
-    if (item.assetId != null && item.type == HistoryType.video) {
-      return FutureBuilder<AssetEntity?>(
-        future: AssetEntity.fromId(item.assetId!),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return _fallbackIcon(item);
-
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: AssetEntityImage(
-              snapshot.data!,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-            ),
-          );
-        },
-      );
-    }
-
-    // AUDIO LOKAL → ICON
     return _fallbackIcon(item);
   }
 
   Widget _fallbackIcon(HistoryItem item) {
     return Container(
-      width: 56,
-      height: 56,
+      width: 56, height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        gradient: const LinearGradient(
-          colors: [Colors.deepPurple, Colors.indigo],
-        ),
+        color: Colors.white10,
       ),
       child: Icon(
         item.type == HistoryType.video ? Icons.videocam : Icons.audiotrack,
-        color: Colors.white,
-        size: 28,
+        color: Colors.white54,
       ),
     );
   }
 
   String _formatTime(DateTime time) {
     final diff = DateTime.now().difference(time);
-
     if (diff.inMinutes < 1) return 'Baru saja';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} menit lalu';
-    if (diff.inHours < 24) return '${diff.inHours} jam lalu';
-    return '${diff.inDays} hari lalu';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} m yang lalu';
+    if (diff.inHours < 24) return '${diff.inHours} j yang lalu';
+    return '${diff.inDays} h yang lalu';
   }
 }

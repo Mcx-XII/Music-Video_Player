@@ -15,14 +15,13 @@ class VideoPlayerPage extends StatefulWidget {
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
   VideoPlayerController? controller;
+  String? videoName;
 
   @override
   void initState() {
     super.initState();
     loadVideo();
   }
-
-  String? videoName;
 
   Future<void> loadVideo() async {
     final file = await widget.video.file;
@@ -32,20 +31,22 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
     controller = VideoPlayerController.file(file)
       ..initialize().then((_) {
-        setState(() {});
-        controller!.play();
+        if (mounted) {
+          setState(() {});
+          controller!.play();
 
-        // ✅ SIMPAN RIWAYAT VIDEO LOKAL
-        HistoryService.add(
-          HistoryItem(
-            type: HistoryType.video,
-            title: widget.video.title ?? 'Video',
-            url: widget.video.id,
-            thumbnail: '',
-            assetId: widget.video.id,
-            playedAt: DateTime.now(),
-          ),
-        );
+          // ✅ FIX: Menggunakan 'addToHistory' sesuai nama di HistoryService
+          HistoryService.addToHistory(
+            HistoryItem(
+              type: HistoryType.video,
+              title: widget.video.title ?? videoName ?? 'Video Lokal',
+              url: widget.video.id, // ID unik untuk media lokal
+              thumbnail: '',
+              assetId: widget.video.id,
+              playedAt: DateTime.now(),
+            ),
+          );
+        }
       });
   }
 
@@ -57,13 +58,19 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Tampilan Loading jika video belum siap
     if (controller == null || !controller!.value.isInitialized) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+      );
     }
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+        elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
         title: Row(
@@ -75,8 +82,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                videoName ?? "Video",
-                style: const TextStyle(color: Colors.white),
+                widget.video.title ?? videoName ?? "Video Player",
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -86,15 +93,31 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       body: Center(
         child: GestureDetector(
           onTap: () {
-            setState(() {
-              controller!.value.isPlaying
-                  ? controller!.pause()
-                  : controller!.play();
-            });
+            if (controller != null) {
+              setState(() {
+                controller!.value.isPlaying
+                    ? controller!.pause()
+                    : controller!.play();
+              });
+            }
           },
-          child: AspectRatio(
-            aspectRatio: controller!.value.aspectRatio,
-            child: VideoPlayer(controller!),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Pemutar Video
+              AspectRatio(
+                aspectRatio: controller!.value.aspectRatio,
+                child: VideoPlayer(controller!),
+              ),
+              
+              // Ikon Pause jika video sedang tidak berjalan
+              if (!controller!.value.isPlaying)
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.black45,
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                ),
+            ],
           ),
         ),
       ),

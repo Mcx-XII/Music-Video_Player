@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/audio_model.dart';
-import '../services/playlist_storage_service.dart'; // Import service untuk simpan playlist
+import '../models/history_item.dart';      // Import model history
+import '../services/history_service.dart'; // Import service history
+import '../services/playlist_storage_service.dart';
 import 'dart:async';
 
 class OnlineAudioPlayerPage extends StatefulWidget {
@@ -39,6 +41,18 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
     
     _player = AudioPlayer();
     try {
+      // --- LOGIKA HISTORY: OTOMATIS MENCATAT SAAT LAGU DIPUTAR ---
+      final currentAudio = widget.audioList[currentIndex];
+      HistoryService.addToHistory(
+        HistoryItem(
+          type: HistoryType.audio,
+          title: currentAudio.title,
+          url: currentAudio.audioUrl,
+          thumbnail: currentAudio.coverUrl,
+          playedAt: DateTime.now(),
+        ),
+      );
+
       await _player!.setUrl(url);
       if (mounted) {
         setState(() {});
@@ -49,7 +63,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
     }
   }
 
-  // --- FUNGSI BARU: DIALOG TAMBAH KE PLAYLIST ---
   void _showAddToPlaylistDialog(AudioModel audio) {
     String folderName = "";
     showDialog(
@@ -163,7 +176,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.05),
-              // ALBUM ART
               Container(
                 width: screenHeight * 0.35,
                 height: screenHeight * 0.35,
@@ -187,7 +199,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.05),
-              // INFO LAGU
               Text(
                 currentAudio.title,
                 textAlign: TextAlign.center,
@@ -201,7 +212,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
                 style: const TextStyle(color: Colors.white54, fontSize: 14),
               ),
               
-              // --- POSISI TOMBOL TAMBAH PLAYLIST (NEW) ---
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: Align(
@@ -213,7 +223,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
                 ),
               ),
 
-              // PROGRESS SLIDER
               StreamBuilder<Duration>(
                 stream: _player!.positionStream,
                 builder: (context, snapshot) {
@@ -251,7 +260,6 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
                 },
               ),
               const SizedBox(height: 20),
-              // KONTROL UTAMA
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

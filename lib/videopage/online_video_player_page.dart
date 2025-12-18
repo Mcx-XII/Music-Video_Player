@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../models/video_model.dart';
+import '../models/history_item.dart';      // Import model history
+import '../services/history_service.dart'; // Import service history
 import 'dart:async';
 
 class OnlineVideoPlayerPage extends StatefulWidget {
@@ -18,7 +20,6 @@ class OnlineVideoPlayerPage extends StatefulWidget {
 }
 
 class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
-  // 1. UBAH: Gunakan tanda tanya (?) dan hapus 'late'
   VideoPlayerController? _controller; 
   late int currentIndex;
   bool _showControls = true;
@@ -35,20 +36,32 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
 
   // Fungsi untuk inisialisasi atau ganti video
   void _initializePlayer(String url) async {
-    // 2. UBAH: Pastikan controller lama dibuang dengan benar
+    // 1. Pastikan controller lama dibuang dengan benar
     if (_controller != null) {
       await _controller!.dispose();
       setState(() {
-        _controller = null; // Set null agar build menampilkan loading
+        _controller = null; 
       });
     }
 
     _controller = VideoPlayerController.networkUrl(Uri.parse(url));
 
     try {
+      // --- LOGIKA HISTORY: OTOMATIS MENCATAT SAAT VIDEO DIMULAI ---
+      final currentVideo = widget.videoList[currentIndex];
+      await HistoryService.addToHistory(
+        HistoryItem(
+          type: HistoryType.video, // Tipe Video sesuai enum kamu
+          title: currentVideo.title,
+          url: currentVideo.videoUrl,
+          thumbnail: currentVideo.thumbnail,
+          playedAt: DateTime.now(),
+        ),
+      );
+
       await _controller!.initialize();
       if (mounted) {
-        setState(() {}); // Update tampilan setelah init selesai
+        setState(() {}); 
         _controller!.play();
         _startHideTimer();
       }
@@ -120,7 +133,6 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 3. UBAH: Cek null-safety sebelum akses controller.value
     if (_controller == null || !_controller!.value.isInitialized) {
       return const Scaffold(
         backgroundColor: Colors.black,
@@ -132,7 +144,6 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 1. VIDEO LAYER
           GestureDetector(
             onTap: _toggleControls,
             behavior: HitTestBehavior.opaque,
@@ -144,7 +155,6 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
             ),
           ),
 
-          // 2. DOUBLE TAP LAYER
           Positioned.fill(
             child: Row(
               children: [
@@ -170,7 +180,6 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
             ),
           ),
 
-          // 3. ANIMASI NOTIFIKASI
           if (_showSeekNotify)
             Center(
               child: Container(
@@ -181,9 +190,7 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
               ),
             ),
 
-          // 4. OVERLAY KONTROL
           if (_showControls) ...[
-            // App Bar
             Positioned(
               top: 0, left: 0, right: 0,
               child: Container(
@@ -208,7 +215,6 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
               ),
             ),
 
-            // Tombol Navigasi
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -237,7 +243,6 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
               ),
             ),
 
-            // Progress Bar & Timer
             Positioned(
               bottom: 0, left: 0, right: 0,
               child: Container(
