@@ -4,7 +4,7 @@ import 'searchpage/search_page.dart';
 import 'historypage/history_page.dart';
 import 'splash_screen.dart';
 import 'profilepage/profile.dart';
-import 'audiopage/audio_list_page.dart';
+import 'audiopage/audio_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<Widget> _pages = [
     const VideoPage(),
-    const AudioListPage(),
+    const AudioPage(),
     const SearchPage(),
     const HistoryPage(),
   ];
@@ -80,7 +80,15 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: const Color.fromARGB(255, 34, 27, 68),
       title: const Text("Audio", style: TextStyle(color: Colors.white)),
       centerTitle: true,
-      leading: const Icon(Icons.audiotrack, color: Colors.white),
+      bottom: const TabBar(
+        indicatorColor: Colors.blue,
+        labelColor: Colors.blue,
+        unselectedLabelColor: Colors.grey,
+        tabs: [
+          Tab(text: "Audio"),
+          Tab(text: "Playlist"),
+        ],
+      ),
     ),
 
     (context) => AppBar(
@@ -99,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isVideo = _currentIndex == 0;
+    final needsTab = _currentIndex == 0 || _currentIndex == 1;
 
     Widget scaffold = Scaffold(
       appBar: _appBars[_currentIndex](context),
@@ -123,8 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-
-    if (isVideo) {
+    if (needsTab) {
       return DefaultTabController(length: 2, child: scaffold);
     }
 

@@ -37,10 +37,20 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.audio.title ?? 'Audio Player')),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 34, 27, 68),
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleSpacing: 4, // bikin judul lebih dekat
+        title: Text(
+          widget.audio.title ?? 'Audio Player',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+
       body: Center(
         child: IconButton(
           iconSize: 64,
+          color: Colors.white,
           icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
           onPressed: () async {
             if (isPlaying) {

@@ -25,7 +25,10 @@ class _AudioListPageState extends State<AudioListPage> {
 
     final albums = await PhotoManager.getAssetPathList(
       type: RequestType.audio,
+      onlyAll: true,
     );
+
+    if (albums.isEmpty) return;
 
     final assets = await albums.first.getAssetListPaged(
       page: 0,
@@ -39,27 +42,33 @@ class _AudioListPageState extends State<AudioListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Audio List', style: const TextStyle(color: Colors.white),), backgroundColor: const Color.fromARGB(255, 34, 27, 68)),
-      body: ListView.builder(
-        itemCount: audios.length,
-        itemBuilder: (context, index) {
-          final audio = audios[index];
+    if (audios.isEmpty) {
+      return const Center(
+        child: Text("Tidak ada audio", style: TextStyle(color: Colors.white)),
+      );
+    }
 
-          return ListTile(
-            leading: const Icon(Icons.music_note),
-            title: Text(audio.title ?? 'Unknown', style: const TextStyle(color: Colors.white),),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AudioPlayerPage(audio: audio),
-                ),
-              );
-            },
-          );
-        },
-      ),
+    return ListView.builder(
+      itemCount: audios.length,
+      itemBuilder: (context, index) {
+        final audio = audios[index];
+
+        return ListTile(
+          leading: const Icon(Icons.music_note, color: Colors.white),
+          title: Text(
+            audio.title ?? 'Unknown',
+            style: const TextStyle(color: Colors.white),
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AudioPlayerPage(audio: audio),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
