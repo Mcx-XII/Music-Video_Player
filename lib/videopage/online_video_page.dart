@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/pixabay_services.dart';
 import '../../models/video_model.dart';
+import '../../services/playlist_storage_service.dart'; 
 import 'online_video_player_page.dart';
 import '../../helpers/internet_checker.dart';
 
@@ -25,7 +26,6 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
     super.initState();
     _fetchVideos();
 
-    // Listener untuk infinite scroll (pagination)
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 200 &&
@@ -43,7 +43,7 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
     if (!connected) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak ada internet')),
+          const SnackBar(content: Text('Tidak ada koneksi internet')),
         );
       }
       return;
@@ -58,24 +58,67 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
     }
 
     try {
-      // Pastikan fetchVideos di service Anda mendukung parameter 'page'
-      final newVideos = await _apiService.fetchVideos(query: ''); 
+      final newVideos = await _apiService.fetchVideos(query: '', page: _page); 
       
-      setState(() {
-        _videos.addAll(newVideos);
-        // Jika data yang datang lebih sedikit dari per_page, berarti sudah habis
-        _hasMore = newVideos.isNotEmpty; 
-        _page++;
-      });
+      if (mounted) {
+        setState(() {
+          _videos.addAll(newVideos);
+          _hasMore = newVideos.isNotEmpty; 
+          _page++;
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal memuat video')),
+          const SnackBar(content: Text('Gagal memuat video dari Pixabay')),
         );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // --- FUNGSI BARU: DIALOG PILIH/BUAT PLAYLIST ---
+  void _showAddToPlaylistDialog(VideoModel video) {
+    String folderName = "";
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2B52),
+        title: const Text("Simpan ke Playlist", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: "Nama Playlist (Misal: Favorit)",
+            hintStyle: TextStyle(color: Colors.white54),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.blueAccent)),
+          ),
+          onChanged: (value) => folderName = value,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+            onPressed: () async {
+              if (folderName.trim().isNotEmpty) {
+                // Menggunakan fungsi group yang baru dibuat di service
+                await PlaylistStorageService.addVideoToGroup(folderName.trim(), video);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Berhasil ditambah ke: $folderName')),
+                  );
+                }
+              }
+            },
+            child: const Text("Simpan"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -87,7 +130,7 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1D1B3E), // Menyesuaikan tema gelap aplikasi
+      backgroundColor: const Color(0xFF1D1B3E), 
       body: RefreshIndicator(
         onRefresh: () => _fetchVideos(refresh: true),
         child: _videos.isEmpty && _isLoading
@@ -114,7 +157,7 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
                         height: 60,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => 
-                          Container(color: Colors.grey, width: 100, height: 60),
+                          Container(color: Colors.grey, width: 100, height: 60, child: const Icon(Icons.broken_image)),
                       ),
                     ),
                     title: Text(
@@ -127,8 +170,14 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
                       "${video.views} views",
                       style: const TextStyle(color: Colors.grey),
                     ),
+                    
+                    // TOMBOL TAMBAH KE KELOMPOK PLAYLIST
+                    trailing: IconButton(
+                      icon: const Icon(Icons.playlist_add, color: Colors.blueAccent),
+                      onPressed: () => _showAddToPlaylistDialog(video),
+                    ),
+
                     onTap: () {
-                      // FIX: Mengirim seluruh List dan Index yang diklik
                       Navigator.push(
                         context,
                         MaterialPageRoute(

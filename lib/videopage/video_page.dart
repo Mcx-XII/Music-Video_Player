@@ -8,11 +8,18 @@ class VideoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const TabBarView(
+    // FIX: Hapus kata 'const' di depan TabBarView agar data playlist bisa di-refresh
+    return TabBarView(
       children: [
-        OnlineVideoPage(), // video online
-        VideoList(),       // video lokal
-        PlaylistList(),    // playlist
+        // Tab 1: Video Online (Pixabay)
+        const OnlineVideoPage(), 
+        
+        // Tab 2: Video Lokal (Internal Storage)
+        const VideoList(), 
+        
+        // Tab 3: Playlist Video (Data tersimpan di SharedPreferences)
+        // FIX: Pastikan tidak memakai 'const' di sini
+        ListVideoPlaylist(), 
       ],
     );
   }

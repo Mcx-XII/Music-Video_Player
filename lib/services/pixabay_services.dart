@@ -25,11 +25,18 @@ class PixabayService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List results = data['results'] ?? [];
-        return results
-            .map((e) => AudioModel.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
+        
+        return results.map((e) {
+          return AudioModel(
+            title: e['name'] ?? 'Unknown Title',
+            artist: e['artist_name'] ?? 'Unknown Artist',
+            audioUrl: e['audio'] ?? '',
+            coverUrl: e['image'] ?? '',
+            duration: e['duration'] ?? 0,
+          );
+        }).toList();
       } else {
-        throw Exception('Gagal mengambil musik: ${response.statusCode}');
+        throw Exception('Gagal mengambil musik');
       }
     } catch (e) {
       throw Exception('Error fetchMusic: $e');
@@ -48,17 +55,46 @@ class PixabayService {
       url += '&q=${Uri.encodeComponent(query)}';
     }
 
-    final response = await http.get(Uri.parse(url));
+    try {
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List videos = data['hits'] ?? [];
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List videos = data['hits'] ?? [];
 
-      return videos
-          .map((e) => VideoModel.fromJson(Map<String, dynamic>.from(e)))
-          .toList();
-    } else {
-      throw Exception('Gagal mengambil video');
+        return videos.map((e) {
+          // 1. Ambil URL video
+          final videoMap = e['videos'];
+          final String videoUrl = videoMap?['medium']?['url'] ?? 
+                                 videoMap?['large']?['url'] ?? '';
+
+          // 2. LOGIKA FIX THUMBNAIL (SANGAT AMAN)
+          // Terkadang picture_id berupa angka, jadi kita paksa ke String
+          final String pictureId = e['picture_id']?.toString() ?? '';
+          
+          String thumbUrl = '';
+          if (pictureId.isNotEmpty) {
+            thumbUrl = "https://i.vimeocdn.com/video/${pictureId}_640x360.jpg";
+          } else {
+            // Jika picture_id kosong, gunakan foto profil user sebagai cadangan
+            thumbUrl = e['userImageURL'] ?? '';
+          }
+
+          // Debugging: Munculkan di terminal untuk cek apakah URL-nya benar
+          print("Generated Thumbnail URL: $thumbUrl");
+
+          return VideoModel(
+            title: e['tags'] ?? 'Unknown Video',
+            videoUrl: videoUrl,
+            thumbnail: thumbUrl, 
+            views: e['views'] ?? 0,
+          );
+        }).toList();
+      } else {
+        throw Exception('Gagal mengambil video');
+      }
+    } catch (e) {
+      throw Exception('Error fetchVideos: $e');
     }
   }
 }
