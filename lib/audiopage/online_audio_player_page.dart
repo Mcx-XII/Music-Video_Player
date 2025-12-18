@@ -32,9 +32,26 @@ class _OnlineAudioPlayerPageState extends State<OnlineAudioPlayerPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 34, 27, 68),
-        title: Text(widget.audio.title,
-            style: const TextStyle(color: Colors.white)),
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.audio.title, // judul audio dari model
+                style: const TextStyle(color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
+
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
