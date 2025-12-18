@@ -22,7 +22,6 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   just_audio: ^0.9.36
-  flutter_media_metadata: ^1.0.0
 
 dev_dependencies:
   flutter_test:
