@@ -175,8 +175,10 @@ class _SearchPageState extends State<SearchPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              OnlineVideoPlayerPage(videoUrl: item.url),
+                          builder: (_) => OnlineVideoPlayerPage(
+                            videoUrl: item.url,
+                            videoTitle: item.title, // kirim judul video
+                          ),
                         ),
                       );
                     } else if (item.type == SearchResultType.audio) {

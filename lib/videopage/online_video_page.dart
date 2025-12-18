@@ -55,9 +55,9 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat: $e')));
     }
   }
 
@@ -105,7 +105,10 @@ class _OnlineVideoPageState extends State<OnlineVideoPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => OnlineVideoPlayerPage(videoUrl: video.videoUrl),
+                  builder: (_) => OnlineVideoPlayerPage(
+                    videoUrl: video.videoUrl,
+                    videoTitle: video.title,
+                  ),
                 ),
               );
             },

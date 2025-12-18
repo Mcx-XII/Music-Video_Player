@@ -3,8 +3,13 @@ import 'package:video_player/video_player.dart';
 
 class OnlineVideoPlayerPage extends StatefulWidget {
   final String videoUrl;
+  final String videoTitle; // tambahkan ini
 
-  const OnlineVideoPlayerPage({super.key, required this.videoUrl});
+  const OnlineVideoPlayerPage({
+    super.key,
+    required this.videoUrl,
+    required this.videoTitle, // required
+  });
 
   @override
   State<OnlineVideoPlayerPage> createState() => _OnlineVideoPlayerPageState();
@@ -50,7 +55,7 @@ class _OnlineVideoPlayerPageState extends State<OnlineVideoPlayerPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                widget.videoUrl.split('/').last, // ambil nama file dari URL
+                widget.videoTitle, // pakai judul asli
                 style: const TextStyle(color: Colors.white),
                 overflow: TextOverflow.ellipsis,
               ),
