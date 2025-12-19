@@ -17,18 +17,45 @@ class _VideoListState extends State<VideoList> {
   List<AssetEntity> _videos = [];
   bool _loading = true;
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _loadVideos();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 300) {
+        _loadVideos(loadMore: true);
+      }
+    });
   }
 
-  Future<void> _loadVideos() async {
-    // ✅ PAKAI PERMISSION VERSI LAMA (WORKING)
+  @override
+  void dispose() {
+    _scrollController.dispose(); // WAJIB
+    super.dispose();
+  }
+
+  int _page = 0;
+  bool _hasMore = true;
+  bool _loadingMore = false;
+
+  Future<void> _loadVideos({bool loadMore = false}) async {
     final granted = await requestMediaPermission();
     if (!granted) {
       if (mounted) setState(() => _loading = false);
       return;
+    }
+
+    if (_loadingMore || !_hasMore) return;
+    if (_loadingMore || !_hasMore) return;
+
+    _loadingMore = true;
+
+    if (!loadMore) {
+      _videos.clear();
+      _page = 0;
     }
 
     final albums = await PhotoManager.getAssetPathList(
@@ -37,21 +64,27 @@ class _VideoListState extends State<VideoList> {
     );
 
     if (albums.isEmpty) {
-      if (mounted) setState(() => _loading = false);
+      _hasMore = false;
+      _loading = false;
       return;
     }
 
-    final videos = await albums.first.getAssetListPaged(
-      page: 0,
-      size: 50,
+    final newVideos = await albums.first.getAssetListPaged(
+      page: _page,
+      size: 50, // 🔥 aman & cepat
     );
 
-    if (mounted) {
-      setState(() {
-        _videos = videos;
-        _loading = false;
-      });
+    if (newVideos.isEmpty) {
+      _hasMore = false;
+    } else {
+      _videos.addAll(newVideos);
+      _page++;
     }
+
+    _loading = false;
+    _loadingMore = false;
+
+    if (mounted) setState(() {});
   }
 
   // ================= PLAYLIST =================
@@ -61,8 +94,10 @@ class _VideoListState extends State<VideoList> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF2D2B52),
-        title: const Text("Simpan ke Playlist",
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Simpan ke Playlist",
+          style: TextStyle(color: Colors.white),
+        ),
         content: TextField(
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
@@ -115,16 +150,24 @@ class _VideoListState extends State<VideoList> {
 
     if (_videos.isEmpty) {
       return const Center(
-        child: Text("Tidak ada video",
-            style: TextStyle(color: Colors.white54)),
+        child: Text("Tidak ada video", style: TextStyle(color: Colors.white54)),
       );
     }
 
     return Scaffold(
       backgroundColor: const Color(0xFF1D1B3E),
       body: ListView.builder(
-        itemCount: _videos.length,
+        controller: _scrollController,
+        itemCount: _videos.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
+          // ===== LOADING INDICATOR BAWAH =====
+          if (index == _videos.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
           final video = _videos[index];
 
           return ListTile(
@@ -149,18 +192,15 @@ class _VideoListState extends State<VideoList> {
               style: const TextStyle(color: Colors.grey),
             ),
             trailing: IconButton(
-              icon: const Icon(Icons.playlist_add,
-                  color: Colors.blueAccent),
+              icon: const Icon(Icons.playlist_add, color: Colors.blueAccent),
               onPressed: () => _showAddToPlaylistDialog(video),
             ),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => VideoPlayerPage(
-                    videoList: _videos,
-                    initialIndex: index,
-                  ),
+                  builder: (_) =>
+                      VideoPlayerPage(videoList: _videos, initialIndex: index),
                 ),
               );
             },
